@@ -35,7 +35,7 @@ IF OBJECT_ID (N'dbo.ParseString', N'FN') IS NOT NULL
 	DROP FUNCTION ParseString;
 GO
 
-CREATE FUNCTION [dbo].ParseString (@String varchar(max), @Search varchar(3)) RETURNS float
+CREATE FUNCTION [dbo].ParseString (@String varchar(max), @Search varchar(10)) RETURNS float
 AS
 	BEGIN
           DECLARE @ix1 int, @ix2 int,  @lx1 int
@@ -105,7 +105,6 @@ AS
 	END
 GO
 
-
 ------------------------------------------------ Create TrackGeometry ------------------------------------------------
 --Used databse for all the track geometry calculations
 IF DB_ID ('TrackGeometry') IS NULL
@@ -119,7 +118,7 @@ USE [TrackGeometry]
 IF OBJECT_ID (N'dbo.TrackListing', N'U') IS NULL
 BEGIN
 CREATE TABLE	TrackListing		([ID] int IDENTITY(1,1) PRIMARY KEY, [Track_Name] varchar(255), [Track_Code] varchar(127), [Track_Details] varchar (max), 
-									[Calculation_Status] bit, [Calculation_Time] datetime)
+									[Calculation_Status] bit, [Expected_Database] varchar(255), [Calculation_Time] datetime)
 END
 
 ---------------------------------------------- Create GeometryHistory Table ----------------------------------------------
