@@ -24,6 +24,9 @@ Date(yyyy-mm-dd)    Author              Comments
 ------------------- ------------------- ------------------------------------------------------------
 2019-09-13          Lewis Walsh			Added commenting and headers to all creation/deletion 
 										sections.
+2019-09-13          Lewis Walsh			Updated the 'ParseString' function to include a NULL
+										value return if the passed @Search variable does not 
+										contain a matching @String value.
 2018-03-22          Maan Widaplan       General formatting and added header information.
 2018-03-22          Maan Widaplan       Added logic to automatically Move G <-> H after 12 months.
 ***************************************************************************************************/
@@ -38,14 +41,20 @@ GO
 CREATE FUNCTION [dbo].ParseString (@String varchar(max), @Search varchar(10)) RETURNS float
 AS
 	BEGIN
-          DECLARE @ix1 int, @ix2 int,  @lx1 int
+          DECLARE @ix1 int, @ix2 int,  @lx1 int, @Result float
 		  
-          SET @lx1 = LEN(@Search)
-		  SET @ix1 = CHARINDEX(@Search,@String,0)
-		  SET @ix2 = CHARINDEX(' ',@String,@ix1+@lx1 )
-		  IF @ix2=0 SET @ix2=99
+		  IF CHARINDEX(@Search, @String, 0) > 0
+			  BEGIN
+				  SET @lx1 = LEN(@Search)
+				  SET @ix1 = CHARINDEX(@Search,@String,0)
+				  SET @ix2 = CHARINDEX(' ',@String,@ix1+@lx1 )
+				  IF @ix2=0 SET @ix2=99
 
-          RETURN convert(float,SUBSTRING(@String, @ix1 + @lx1, @ix2-(@ix1 + @lx1)))
+				  SET @Result = convert(float,SUBSTRING(@String, @ix1 + @lx1, @ix2-(@ix1 + @lx1)))
+			  END
+		  ELSE
+			 SET @Result = NULL
+	RETURN @Result
     END
 GO
 
