@@ -8,10 +8,11 @@ Description:        Run this script to add functions to a chosen GeoMoS database
 					perform automated track geometry calculations on.
 Affected table(s):  [dbo.TrackListing]
 					[dbo.GeometryHistory]
+					[dbo.ReportingData]
 					[dbo.PrismHistory]
 Affected function:  [dbo.ParseString]
 					[dbo.BearingandDistance]
-					[dbo.MidOrdinate]
+					[dbo.SelectToHTML]
 Used By:            Master script which runs all calculations of track geometry. Functions used for
 					computations, database and tables used for storing the results.
 Usage:              Run once at setup stage to create and add all required functions to a chosen 
@@ -27,8 +28,16 @@ Date(yyyy-mm-dd)    Author              Comments
 2019-09-13          Lewis Walsh			Updated the 'ParseString' function to include a NULL
 										value return if the passed @Search variable does not 
 										contain a matching @String value.
-2018-03-22          Maan Widaplan       General formatting and added header information.
-2018-03-22          Maan Widaplan       Added logic to automatically Move G <-> H after 12 months.
+2019-09-21          Lewis Walsh			Created the [dbo.SelectToHTML] procedure for creating a
+										formatted HTML table string from a provided SQL SELECT
+										statement and predetermined or default formatting parameters.
+2019-09-21          Lewis Walsh			Created an additional table [dbo.ReportingData] for
+										storing a combination of prism data and track geometry 
+										data which is to be used for reporting purposes. The table
+										will contain a copy of the calculated geometry data from the
+										[dbo.GeometryHistory] table where the geometry data chainage
+										is the nearest neighbour to a [dbo.PrismHistory] observation
+										for a given calculation set. 
 ***************************************************************************************************/
 
 ------------------------------------------------ Parse String Function------------------------------------------------
@@ -92,27 +101,78 @@ AS
 	END
 GO
 
------------------------------------------------- MidOrdinate Function ------------------------------------------------
---Calculated the middle ordinate value (vertical or horizontal) on a curve defined by a start, middle and end coordinate.
-IF OBJECT_ID (N'dbo.MidOrdinate', N'FN') IS NOT NULL
-	DROP FUNCTION [dbo].MidOrdinate;
+------------------------------------------------ SelectToHTML ------------------------------------------------
+-- Description: Turns a query into a formatted HTML table. Useful for emails. 
+-- Any ORDER BY clause needs to be passed in the separate ORDER BY parameter.
+IF OBJECT_ID (N'dbo.SelectToHTML', N'P') IS NOT NULL
+	DROP PROCEDURE [dbo].SelectToHTML;
 GO
 
-CREATE FUNCTION [dbo].MidOrdinate (@East_Start float, @North_Start float, @East_Mid float, @North_Mid float, @East_End float, @North_End float) RETURNS float
+CREATE PROC [dbo].SelectToHTML 
+(
+  @query nvarchar(MAX), --A query to turn into HTML format. It should not include an ORDER BY clause.
+  @orderBy nvarchar(MAX) = NULL, --An optional ORDER BY clause. It should contain the words 'ORDER BY'.
+  @tablefontsize nvarchar(40) = '10pt', --10pt
+  @tablefontstyle nvarchar(256) = 'calibri, sans-serif',
+  @tablewidth nvarchar(40) = '60%',
+  @cellpadding nvarchar(40) = '10',
+  @tableboarderstyle nvarchar(100) = 'solid',
+  @tableboardersize nvarchar(40) = '1',
+  @tabletextalign nvarchar(100) = 'left',
+  @columnwidth nvarchar(40) = '100px',
+  @headerheight nvarchar(40) = '30px',
+  @rowheight nvarchar(40) = '20px',
+  @headerbackcolour nvarchar(100) = '#dddddd',
+  @headerfrontcolour nvarchar(100) = '#000000',
+  @headerboardercolour nvarchar(100) = '#dddddd',
+  @rowbackcolour nvarchar(100) = '#ffffff',
+  @rowfrontcolour nvarchar(100) = '#000000',
+  @rowboardercolour nvarchar(100) = '#dddddd',
+  @html nvarchar(MAX) = NULL OUTPUT --The HTML output of the procedure.
+)
 AS
-    BEGIN
-		DECLARE @BearingLongChord float
-		DECLARE @BearingMidChord float
-		DECLARE @DistanceMidChord float
-		DECLARE @dAngle float
+BEGIN   
+  SET NOCOUNT ON;
 
-		SELECT @BearingLongChord=Bearing  from dbo.BandD(@East_Start,@North_Start,@East_End,@North_End)
-		SELECT @BearingMidChord=Bearing,@DistanceMidChord=Distance  from dbo.BandD(@East_Start,@North_Start,@East_Mid,@North_Mid)
-		SET @dAngle = @BearingLongChord-@BearingMidChord
+  --Set default values
+  IF @orderBy IS NULL BEGIN
+    SET @orderBy = ''  
+  END
 
-		RETURN  Sin(@dAngle)*@DistanceMidChord
-	END
+  SET @orderBy = REPLACE(@orderBy, '''', '''''');
+
+  DECLARE @realQuery nvarchar(MAX) = '
+    DECLARE @headerRow nvarchar(MAX);
+    DECLARE @cols nvarchar(MAX);    
+
+    SELECT * INTO #dynSql FROM (' + @query + ') sub;
+
+    SELECT @cols = COALESCE(@cols + '', '''''''', '', '''') + ''['' + name + ''] AS ''''td''''''
+    FROM tempdb.sys.columns 
+    WHERE object_id = object_id(''tempdb..#dynSql'')
+    ORDER BY column_id;
+
+    SET @cols = ''SET @html = CAST(( SELECT '' + @cols + '' FROM #dynSql ' + @orderBy + ' FOR XML PATH(''''tr''''), ELEMENTS XSINIL) AS nvarchar(max))''    
+
+    EXEC sys.sp_executesql @cols, N''@html nvarchar(MAX) OUTPUT'', @html=@html OUTPUT
+
+    SELECT @headerRow = COALESCE(@headerRow + '''', '''') + ''<th style="width: ' + @columnwidth + '; border-color: ' + @headerboardercolour + '; background-color: ' + @headerbackcolour + '; height: ' + @headerheight + '; text-align: ' + @tabletextalign + ';"><span style="font-family: ' + @tablefontstyle + '; font-size: ' + @tablefontsize + '; color: ' + @headerfrontcolour + ';">'' + name + ''</span></th>'' 
+    FROM tempdb.sys.columns 
+    WHERE object_id = object_id(''tempdb..#dynSql'')
+    ORDER BY column_id;
+
+    SET @headerRow = ''<tr style="height: ' + @rowheight + ';">'' + @headerRow + ''</tr>'';
+	SELECT @html = REPLACE(@html, ''<tr xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'', ''<tr style="height: ' + @rowheight + ';">'')
+	SELECT @html = REPLACE(@html, ''<td>'', ''<td style="width: ' + @columnwidth + '; height: ' + @rowheight + '; border-color: ' + @rowboardercolour + '; border-style: ' + @tableboarderstyle + '; text-align: ' + @tabletextalign + '; background-color: ' + @rowbackcolour + ';"><span style="font-size: ' + @tablefontsize + '; font-family: ' + @tablefontstyle + '; color: ' + @rowfrontcolour + ';">'')
+	SELECT @html = REPLACE(@html, ''</td>'', ''</span></td>'')
+
+    SET @html = ''<table style="width: ' + @tablewidth + '; border-collapse: collapse; border-style: ' + @tableboarderstyle + '; border-color: ' + @rowboardercolour + ';" border="' + @tableboardersize + '" cellpadding="' + @cellpadding + '"><tbody>'' + @headerRow + @html + ''</tbody></table>'';    
+    ';
+
+  EXEC sys.sp_executesql @realQuery, N'@html nvarchar(MAX) OUTPUT', @html=@html OUTPUT
+END
 GO
+
 
 ------------------------------------------------ Create TrackGeometry ------------------------------------------------
 --Used databse for all the track geometry calculations
@@ -134,15 +194,33 @@ END
 --Used for storing all historic calculations of track geometry parameters. Can be linked to the PrismHistory table via the [Calculaton_ID] column.
 IF OBJECT_ID (N'dbo.GeometryHistory', N'U') IS NULL
 BEGIN
-CREATE TABLE	GeometryHistory		([Calculation_ID] int, [Track_CL_Chainage] varchar(100), [Track_Code] varchar(100) NULL, [DataWindow_Start] datetime, [DataWindow_End] datetime,
-									[Rail_Cant] decimal (20,6), [Rail_Gauge] decimal (20,6), [Twist_Short] decimal (20,6), [Twist_Long] decimal (20,6),
+CREATE TABLE	GeometryHistory		([Calculation_ID] int, [Track_CL_Chainage] decimal(30,10), [Track_Code] varchar(100) NULL, [DataWindow_Start] datetime, [DataWindow_End] datetime,
+									[Rail_Cant] decimal (20,6), [Rail_Gauge] decimal (20,6), [Twist_Short] decimal(30,10), [Twist_Long] decimal (20,6),
 									[LR_ID] varchar(100), [LR_Easting] decimal (20,6), [LR_Northing] decimal (20,6), [LR_Height] decimal (20,6), 
 									[LR_Radius] decimal (20,6), [LR_Top_Short] decimal (20,6), [LR_Top_Long] decimal (20,6), [LR_Line_Short] decimal (20,6),
 									[LR_Line_Long] decimal (20,6), [RR_ID] varchar(100), [RR_Easting] decimal (20,6), [RR_Northing] decimal (20,6), 
 									[RR_Height] decimal (20,6), [RR_Radius] decimal (20,6), [RR_Top_Short] decimal (20,6), [RR_Top_Long] decimal (20,6),
 									[RR_Line_Short] decimal (20,6), [RR_Line_Long] decimal (20,6), [CL_ID] varchar(100), [CL_Easting] decimal (20,6),
 									[CL_Northing] decimal (20,6), [CL_Height] decimal (20,6), [CL_Radius] decimal (20,6), [CL_Top_Short] decimal (20,6),
-									[CL_Top_Long] decimal (20,6), [CL_Line_Short] decimal (20,6), [CL_Line_Long] decimal (20,6))
+									[CL_Top_Long] decimal (20,6), [CL_Line_Short] decimal (20,6), [CL_Line_Long] decimal (20,6), [Diff_Chainage_Left] decimal(20,6), 
+									[Diff_Chainage_Rght] decimal(20,6), [Calculation_Comment] varchar(max))
+END
+
+---------------------------------------------- Create ReportingData Table ----------------------------------------------
+--A combination of the PrismHistory and GeometryHistory tables stored into at runtime. Will store original prism locations and track geometry results at nearest chainage.
+IF OBJECT_ID (N'dbo.ReportingData', N'U') IS NULL
+BEGIN
+CREATE TABLE	ReportingData		([Calculation_ID] int, [Parent_Instrument] varchar (200), [Geometry_Instrument] varchar (200), 
+									[Point_Chainage] decimal(20,6), [Calculation_Chainage] decimal(20,6), [Chainage_Diff] decimal(20,6), [Point_Epoch] datetime,
+									[Calculation_Epoch] datetime, [Epoch_Diff] decimal (20,6), [Rail_Cant] decimal (20,6), [Rail_Gauge] decimal (20,6), 
+									[Twist_Short] decimal(30,10), [Twist_Long] decimal (20,6), [LR_ID] varchar(100), [LR_Easting] decimal (20,6), 
+									[LR_Northing] decimal (20,6), [LR_Height] decimal (20,6), [LR_Radius] decimal (20,6), [LR_Top_Short] decimal (20,6), 
+									[LR_Top_Long] decimal (20,6), [LR_Line_Short] decimal (20,6), [LR_Line_Long] decimal (20,6), [RR_ID] varchar(100), 
+									[RR_Easting] decimal (20,6), [RR_Northing] decimal (20,6), [RR_Height] decimal (20,6), [RR_Radius] decimal (20,6), 
+									[RR_Top_Short] decimal (20,6), [RR_Top_Long] decimal (20,6), [RR_Line_Short] decimal (20,6), [RR_Line_Long] decimal (20,6), 
+									[CL_ID] varchar(100), [CL_Easting] decimal (20,6), [CL_Northing] decimal (20,6), [CL_Height] decimal (20,6), 
+									[CL_Radius] decimal (20,6), [CL_Top_Short] decimal (20,6),[CL_Top_Long] decimal (20,6), [CL_Line_Short] decimal (20,6), 
+									[CL_Line_Long] decimal (20,6),[Diff_Chainage_Left] decimal(20,6), [Diff_Chainage_Rght] decimal(20,6), [Calculation_Comment] varchar(max))
 END
 
 ---------------------------------------------- Create PrismHistory Table ----------------------------------------------
@@ -151,8 +229,8 @@ END
 IF OBJECT_ID (N'dbo.PrismHistory', N'U') IS NULL
 BEGIN
 CREATE TABLE	PrismHistory		([Calculation_ID] int, [Point_Name] nvarchar(100) NULL, [Point_Epoch] dateTime NULL, [Point_Group] nvarchar(100) NULL, 
-									[Point_ExpTime_DD] decimal(20,6) NULL, [Point_ExpTime_DHM] varchar (100) NULL, [Point_Easting] float NULL,
-									[Point_Northing] float NULL, [Point_Height] float NULL, [Point_EOffset] float NULL, [Point_NOffset] float NULL,
-									[Point_HOffset] float NULL,	[Track_Chainage] float NULL, [Track_RailSide] nvarchar(1) NULL,	[Track_Code] nvarchar(100) NULL,
-									[Track_Easting] float NULL,	[Track_Northing] float NULL, [Track_Height] float NULL)
+									[Point_ExpTime_DD] decimal(20,6) NULL, [Point_ExpTime_DHM] varchar (100) NULL, [Point_Easting] decimal(30,10) NULL,
+									[Point_Northing] decimal(30,10) NULL, [Point_Height] decimal(30,10) NULL, [Point_EOffset] decimal(30,10) NULL, [Point_NOffset] decimal(30,10) NULL,
+									[Point_HOffset] decimal(30,10) NULL,	[Track_Chainage] decimal(30,10) NULL, [Track_RailSide] nvarchar(50) NULL, [Track_Code] nvarchar(100) NULL,
+									[Track_Easting] decimal(30,10) NULL,	[Track_Northing] decimal(30,10) NULL, [Track_Height] decimal(30,10) NULL)
 END
