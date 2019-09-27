@@ -64,38 +64,71 @@ SET ANSI_WARNINGS OFF
 --===============================================================================================================================
 -- Set and declare variables
 --===============================================================================================================================
+DECLARE @Debug as int = 2								-- If set to 0 = live automation from exe, 1 = Psuedo live (keep data), 2 = dubug mode (clear and reset tables)
 
 --User Input
-DECLARE @CalculationWindow as int = 0					-- The required frequency (in minutes) of calcualtions. i.e the time spacing between required calculations.
-DECLARE @DataExtractionWindow as int = 300				-- Number of hours to look back when extracting data for the calculations
-DECLARE @OverdueDataWarning as int = 110				-- Number of hours by which a prism will be flagged as having overdue (old) observations. Observations will still be used in calculations, however a warning will be sent to email recipents.
+DECLARE @CalculationFrequency as int = 0					-- The required frequency (in minutes) of calcualtions. i.e the time spacing between required calculations.
+DECLARE @DataExtractionWindow as int = 96				-- Number of hours to look back when extracting data for the calculations
+DECLARE @OverdueDataWarning as int = 72					-- Number of hours by which a prism will be flagged as having overdue (old) observations. Observations will still be used in calculations, however a warning will be sent to email recipents.
 DECLARE @SendOverdueEmail as bit = 0					-- Identifier to enable or disable the sending of email alerts (1 = enable, 0 = disable)
-DECLARE @PrismSpacingLimit as decimal(30,10) = 7.2		-- A value (in meters) used to check the spacing between track prisms any prisms seperated by more than this value will not get geometry calculations.
+DECLARE @PrismSpacingLimit as decimal(38,10) = 7.2		-- A value (in meters) used to check the spacing between track prisms any prisms seperated by more than this value will not get geometry calculations.
 
-DECLARE @ChainageStep decimal(30,10) = 1.2				-- The spacing at which you want to calculate track geometry at. i.e. every x meters.
-DECLARE @ShortTwistStep decimal(30,10) = 2.4			-- The spacing at which short twist should be calculated, looking in reverse chainage.
-DECLARE @LongTwistStep decimal(30,10) = 14.4			-- The spacing at which long twist should be calculated, looking in reverse chainage.
+DECLARE @ChainageStep decimal(38,10) = 1.2				-- The spacing at which you want to calculate track geometry at. i.e. every x meters.
+DECLARE @ShortTwistStep decimal(38,10) = 2.4			-- The spacing at which short twist should be calculated, looking in reverse chainage.
+DECLARE @LongTwistStep decimal(38,10) = 14.4			-- The spacing at which long twist should be calculated, looking in reverse chainage.
 
-DECLARE @ShortLineChord decimal(30,10) = 4.8			-- The chord length for the short line calculation, looking foward and back half of this length from reference chainage.
-DECLARE @LongLineChord decimal(30,10) = 9.6				-- The chord length for the long line calculation, looking foward and back half of this length from reference chainage.
-DECLARE @ShortTopChord decimal(30,10) = 4.8				-- The chord length for the short top calculation, looking foward and back half of this length from reference chainage.
-DECLARE @LongTopChord decimal(30,10) = 9.6				-- The chord length for the long top calculation, looking foward and back half of this length from reference chainage.
+DECLARE @ShortLineChord decimal(38,10) = 4.8			-- The chord length for the short line calculation, looking foward and back half of this length from reference chainage.
+DECLARE @LongLineChord decimal(38,10) = 9.6				-- The chord length for the long line calculation, looking foward and back half of this length from reference chainage.
+DECLARE @ShortTopChord decimal(38,10) = 4.8				-- The chord length for the short top calculation, looking foward and back half of this length from reference chainage.
+DECLARE @LongTopChord decimal(38,10) = 9.6				-- The chord length for the long top calculation, looking foward and back half of this length from reference chainage.
 
 DECLARE @LeftRailIndicator varchar(30) = 'RPL'			-- Search string to identify all left rail prisms. Script will try to find a string match in the instrument name and group point as a left rail prism.
 DECLARE @RightRailIndicator varchar(30) = 'RPR'			-- Search string to identify all right rail prisms. Script will try to find a string match in the instrument name and group point as a right rail prism.
 
-DECLARE @EmailProfile varchar(256) = 'Track Geometry Alerts Profile' --The name of the email profile for sending alerts.
-DECLARE @EmailRecipients varchar(max) = 'lwalsh@landsurveys.net.au'
+DECLARE @EmailProfile varchar(256) = 'Track Geometry Alerts Profile'	-- The name of the email profile for sending alerts.
+DECLARE @EmailRecipients varchar(max) = 'lwalsh@landsurveys.net.au'		-- Recipients list for the email alerts.
 
+--For setting variable values from sqlcmd prompt
+IF (@Debug = 0) 
+	SELECT	@CalculationFrequency = '$(CalculationWindow)', 
+			@DataExtractionWindow = '$(DataExtractionWindow)',
+			@OverdueDataWarning = '$(OverdueDataWarning)',
+			@SendOverdueEmail = '$(SendOverdueEmail)',
+			@PrismSpacingLimit = '$(PrismSpacingLimit)',
+
+			@ChainageStep = '$(ChainageStep)',
+			@ShortTwistStep = '$(ShortTwistStep)',
+			@LongTwistStep = '$(LongTwistStep)',
+
+			@ShortLineChord = '$(ShortLineChord)',
+			@LongLineChord = '$(LongLineChord)',
+			@ShortTopChord = '$(ShortTopChord)',
+			@LongTopChord = '$(LongTopChord)',
+
+			@LeftRailIndicator = '$(LeftRailIndicator)',
+			@RightRailIndicator = '$(RightRailIndicator)',
+			@EmailProfile = '$(EmailProfile)',
+			@EmailRecipients = '$(EmailRecipients)';
+
+--Print settings to log file
 PRINT '=============================================================================================================='
 PRINT CONVERT(varchar, GETDATE(), 109) + ' | Starting Track Geometry script' + Char(13)
 PRINT 'CURRENT SCRIPT SETTINGS:'  + Char(13) 
-PRINT ' - Calculation window: '+ CAST(@CalculationWindow as varchar) + ' | Repeat geometry if last calculations were performed more than ' + CAST(@CalculationWindow as varchar) + ' minutes ago.'
-PRINT ' - Data extraction window: ' + CAST(@DataExtractionWindow as varchar) + ' | Gather GeoMoS prism data that has been observed within the last ' + CAST(@DataExtractionWindow as varchar) + ' hours.'
+PRINT ' - Calculation frequency: '+ CAST(@CalculationFrequency as varchar) + ' min | Repeat calcualtions if last calculations were performed more than ' + CAST(@CalculationFrequency as varchar) + ' minutes ago.'
+PRINT ' - Data extraction window: ' + CAST(@DataExtractionWindow as varchar) + ' hrs | Gather GeoMoS prism data that has been observed within the last ' + CAST(@DataExtractionWindow as varchar) + ' hours.'
 PRINT ' - Send overdue data email: ' + CAST(@SendOverdueEmail as varchar) + ' | 1 = enabled (send email), 0 = disabled (dont send email). Ignore the limit below if emails are disabled.'
-PRINT ' - Overdue data limit: ' + CAST(@OverdueDataWarning as varchar) + ' | Report any prisms that have not had readings taken within the last ' + CAST(@OverdueDataWarning as varchar) + ' hours.'
-PRINT ' - Prism spacing limit: ' + CAST(CAST(@PrismSpacingLimit as decimal(5,1)) as varchar) + ' | Do not perform track coordinate interpolation when prism data is seperated by more than ' + CAST(CAST(@PrismSpacingLimit as decimal(5,1)) as varchar) + ' meters.'
-PRINT ' - Track interpolation step: ' + CAST(CAST(@ChainageStep as decimal(5,1)) as varchar) + ' | Calculate interpolated track locations at chainages increasing in ' + CAST(CAST(@ChainageStep as decimal(5,1)) as varchar) + ' meter steps.' + Char(13)
+PRINT ' - Overdue data limit: ' + CAST(@OverdueDataWarning as varchar) + ' hrs | Report any prisms that have not had readings taken within the last ' + CAST(@OverdueDataWarning as varchar) + ' hours.'
+PRINT ' - Prism spacing limit: ' + CAST(CAST(@PrismSpacingLimit as decimal(5,1)) as varchar) + 'm | Do not perform track coordinate interpolation when prism data is seperated by more than ' + CAST(CAST(@PrismSpacingLimit as decimal(5,1)) as varchar) + ' meters.'
+PRINT ' - Track interpolation step: ' + CAST(CAST(@ChainageStep as decimal(5,1)) as varchar) + 'm | Calculate interpolated track locations at chainages increasing in ' + CAST(CAST(@ChainageStep as decimal(5,1)) as varchar) + ' meter steps.' + Char(13)
+
+PRINT ' - Short Twist Step: '+ CAST(CAST(@ShortTwistStep as decimal(5,1)) as varchar) + 'm | Chainage spacing for short twist calculations (looking back from the calculation chainage).'
+PRINT ' - Long Twist Step: ' + CAST(CAST(@LongTwistStep as decimal(5,1)) as varchar) + 'm | Chainage spacing for long twist calculations (looking back from the calculation chainage).'
+PRINT ' - Short Line Chord: ' + CAST(CAST(@ShortLineChord as decimal(5,1)) as varchar) + 'm | Chord length for short line (horizontal versine) calculations (looking back and foward half of the chord length from the calculation chainage).'
+PRINT ' - Long Line Chord: ' + CAST(CAST(@LongLineChord as decimal(5,1)) as varchar) + 'm |  Chord length for long line (horizontal versine) calculations (looking back and foward half of the chord length from the calculation chainage).'
+PRINT ' - Short Top Chord: ' + CAST(CAST(@ShortTopChord as decimal(5,1)) as varchar) + 'm |  Chord length for short top (vertical versine) calculations (looking back and foward half of the chord length from the calculation chainage).'
+PRINT ' - Long Top Chord: ' + CAST(CAST(@LongTopChord as decimal(5,1)) as varchar) + 'm | Chord length for long top (vertical versine) calculations (looking back and foward half of the chord length from the calculation chainage).'
+PRINT ' - Left Rail Indicator: ' + CAST(@LeftRailIndicator as varchar) + ' | String identifer for left rail points. Must match with left rail names from GeoMoS.'
+PRINT ' - Right Rail Indicator: ' + CAST(@RightRailIndicator as varchar) + ' | String identifer for right rail points. Must match with right rail names from GeoMoS.' + Char(13)
 
 --Check inital user input
 DECLARE @ErrorLevel int = 0
@@ -134,21 +167,21 @@ DECLARE @PrismCount int, @PrismTotalCount int, @TrackTotal int, @TrackCalculatio
 --Track alignment variables
 DECLARE @MinChainage as decimal(30,5), @MaxChainage as decimal(30,5)
 DECLARE @ChainageIndex as decimal(30,5), @Diff_Chainage_Left decimal(30,5), @Diff_Chainage_Rght decimal(30,5)
-DECLARE @Prev_PointName varchar(100), @Prev_Chainage decimal(30,10), @Prev_Easting decimal(30,10), @Prev_Northing decimal(30,10), @Prev_Height decimal(30,10)
-DECLARE @Next_PointName varchar(100), @Next_Chainage decimal(30,10), @Next_Easting decimal(30,10), @Next_Northing decimal(30,10), @Next_Height decimal(30,10)		
-DECLARE @Left_Easting decimal(30,10), @Left_Northing decimal(30,10), @Left_Height decimal(30,10)
-DECLARE @Rght_Easting decimal(30,10), @Rght_Northing decimal(30,10), @Rght_Height decimal(30,10)
+DECLARE @Prev_PointName varchar(100), @Prev_Chainage decimal(38,10), @Prev_Easting decimal(38,10), @Prev_Northing decimal(38,10), @Prev_Height decimal(38,10)
+DECLARE @Next_PointName varchar(100), @Next_Chainage decimal(38,10), @Next_Easting decimal(38,10), @Next_Northing decimal(38,10), @Next_Height decimal(38,10)		
+DECLARE @Left_Easting decimal(38,10), @Left_Northing decimal(38,10), @Left_Height decimal(38,10)
+DECLARE @Rght_Easting decimal(38,10), @Rght_Northing decimal(38,10), @Rght_Height decimal(38,10)
 
 --Track geometry variables
-DECLARE @Track_Cant decimal(30,10), @Track_Guage decimal(30,10), @Twist_Short decimal(30,10), @Twist_Long decimal(30,10)
+DECLARE @Track_Cant decimal(38,10), @Track_Guage decimal(38,10), @Twist_Short decimal(38,10), @Twist_Long decimal(38,10)
 DECLARE @CalculationComment varchar(max), @CalculationWarning  int, @OverdueCount int, @OverdueTotalCount int
 DECLARE @Point_From nvarchar(100), @Point_At nvarchar(100), @Point_To nvarchar(100)
 DECLARE @Param_Top float, @Param_Line float, @Param_Radius float
 DECLARE @Side_A float, @Side_B float, @Side_C float
-DECLARE @Bearing_LongChord decimal(30,10), @Bearing_MidChord decimal(30,10), @Bearing_Diff decimal(30,10)
-DECLARE @Data_E_From decimal(30,10), @Data_N_From decimal(30,10), @Data_H_From decimal(30,10)
-DECLARE @Data_E_At decimal(30,10), @Data_N_At decimal(30,10), @Data_H_At decimal(30,10)
-DECLARE @Data_E_To decimal(30,10), @Data_N_To decimal(30,10), @Data_H_To decimal(30,10)
+DECLARE @Bearing_LongChord decimal(38,10), @Bearing_MidChord decimal(38,10), @Bearing_Diff decimal(38,10)
+DECLARE @Data_E_From decimal(38,10), @Data_N_From decimal(38,10), @Data_H_From decimal(38,10)
+DECLARE @Data_E_At decimal(38,10), @Data_N_At decimal(38,10), @Data_H_At decimal(38,10)
+DECLARE @Data_E_To decimal(38,10), @Data_N_To decimal(38,10), @Data_H_To decimal(38,10)
 
 --===============================================================================================================================
 -- Initalise calculation variables
@@ -169,7 +202,7 @@ EXEC (@Database_Script)
 
 -- Intalise track and calculation counters
 SELECT	@TrackCounter = MIN([Row_ID]), @CalculationID = Max([Calculation_ID]), @TrackTotal = COUNT([ID]) FROM ##CalculationListing
-SELECT	@TrackCalculationTime = COUNT([ID]) FROM ##CalculationListing WHERE [Calculation_Time] < DateADD(MINUTE, -@CalculationWindow, @CurrentDateTime)
+SELECT	@TrackCalculationTime = COUNT([ID]) FROM ##CalculationListing WHERE [Calculation_Time] < DateADD(MINUTE, -@CalculationFrequency, @CurrentDateTime)
 SET		@Calculation_Check = 0 -- 0 = no calculations, 1 = atleast one calculation, 3 = Error encountered
 SET		@CalculationWarning = 0
 SET		@PrismTotalCount = 0
@@ -196,7 +229,7 @@ BEGIN
 	SET		@Calculation_Check = 0
 
 	--Start of rail analysis calculation trigger
-	IF	@CurrentDateTime > DateADD(MINUTE, @CalculationWindow, @LastRailCalcTime) AND @ExpectedDatabase = DB_NAME() 
+	IF	@CurrentDateTime > DateADD(MINUTE, @CalculationFrequency, @LastRailCalcTime) AND @ExpectedDatabase = DB_NAME() 
 		BEGIN
 		
 			--Determine the calculation ID for the given dataset
@@ -222,10 +255,10 @@ BEGIN
 			PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Starting prism data extraction.'
 			--Create temporary table #PrismData to store all the required prism and track coordinate data
 			CREATE TABLE	#PrismData	([Calculation_ID] int, [Point_Name] nvarchar(100) NULL, [Point_Epoch] dateTime NULL, [Point_Group] nvarchar(100) NULL, 
-										[Point_ExpTime_DD] decimal(20,6) NULL, [Point_ExpTime_DHM] varchar (100) NULL, [Point_Easting] decimal(30,10) NULL,
-										[Point_Northing] decimal(30,10) NULL, [Point_Height] decimal(30,10) NULL, [Point_EOffset] decimal(30,10) NULL, [Point_NOffset] decimal(30,10) NULL,
-										[Point_HOffset] decimal(30,10) NULL,	[Track_Chainage] decimal(30,10) NULL, [Track_RailSide] nvarchar(50) NULL, [Track_Code] nvarchar(100) NULL,
-										[Track_Easting] decimal(30,10) NULL,	[Track_Northing] decimal(30,10) NULL, [Track_Height] decimal(30,10) NULL, [Epoch_Index] int NULL)
+										[Point_ExpTime_DD] decimal(38,10) NULL, [Point_ExpTime_DHM] varchar (100) NULL, [Point_Easting] decimal(38,10) NULL,
+										[Point_Northing] decimal(38,10) NULL, [Point_Height] decimal(38,10) NULL, [Point_EOffset] decimal(38,10) NULL, [Point_NOffset] decimal(38,10) NULL,
+										[Point_HOffset] decimal(38,10) NULL,	[Track_Chainage] decimal(38,10) NULL, [Track_RailSide] nvarchar(50) NULL, [Track_Code] nvarchar(100) NULL,
+										[Track_Easting] decimal(38,10) NULL,	[Track_Northing] decimal(38,10) NULL, [Track_Height] decimal(38,10) NULL, [Epoch_Index] int NULL)
 
 			-- Store relevant data containing all the latest readings inside the given extraction window into the #PrismData table
 			INSERT INTO #PrismData
@@ -266,9 +299,9 @@ BEGIN
 					--===============================================================================================================================================
 					-- Begin building of track geometry table
 					--===============================================================================================================================================
-					PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Starting track interpolation calculations at a ' + CAST(CAST(@ChainageStep as decimal(5,1)) as varchar) + ' meter step.'
-					CREATE TABLE #TrackGeometry	([Calculation_ID] int, [Track_CL_Chainage] decimal(30,10), [Track_Code] varchar(100) NULL, [DataWindow_Start] datetime, [DataWindow_End] datetime,
-												[Rail_Cant] decimal (20,6), [Rail_Gauge] decimal (20,6), [Twist_Short] decimal(30,10), [Twist_Long] decimal (20,6),
+					PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Starting track interpolation calculations at a ' + CAST(CAST(@ChainageStep as decimal(10,1)) as varchar) + ' meter step.'
+					CREATE TABLE #TrackGeometry	([Calculation_ID] int, [Track_CL_Chainage] decimal(38,10), [Track_Code] varchar(100) NULL, [DataWindow_Start] datetime, [DataWindow_End] datetime,
+												[Rail_Cant] decimal (20,6), [Rail_Gauge] decimal (20,6), [Twist_Short] decimal(38,10), [Twist_Long] decimal (20,6),
 												[LR_ID] varchar(100), [LR_Easting] decimal (20,6), [LR_Northing] decimal (20,6), [LR_Height] decimal (20,6), 
 												[LR_Radius] decimal (20,6), [LR_Top_Short] decimal (20,6), [LR_Top_Long] decimal (20,6), [LR_Line_Short] decimal (20,6),
 												[LR_Line_Long] decimal (20,6), [RR_ID] varchar(100), [RR_Easting] decimal (20,6), [RR_Northing] decimal (20,6), 
@@ -353,9 +386,9 @@ BEGIN
 														[Twist_Long], [LR_ID], [LR_Easting], [LR_Northing], [LR_Height], [RR_ID], [RR_Easting], [RR_Northing], [RR_Height], [CL_ID],
 														[CL_Easting], [CL_Northing], [CL_Height], [Diff_Chainage_Left], [Diff_Chainage_Rght], [Calculation_Comment])
 							VALUES	(@CalculationID, ROUND(@ChainageIndex, 2), @CurrentTrack, @ExtractStartTime, @ExtractEndTime, @Track_Cant, @Track_Guage, @Twist_Short, @Twist_Long,
-									@CurrentTrack + '-LR-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(6,1)) as varchar(15)),6), @Left_Easting, @Left_Northing, @Left_Height,
-									@CurrentTrack + '-RR-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(6,1)) as varchar(15)),6), @Rght_Easting, @Rght_Northing, @Rght_Height,
-									@CurrentTrack + '-CL-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(6,1)) as varchar(15)),6), (@Left_Easting + @Rght_Easting)/2, 
+									@CurrentTrack + '-LR-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(10,1)) as varchar(15)),6), @Left_Easting, @Left_Northing, @Left_Height,
+									@CurrentTrack + '-RR-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(10,1)) as varchar(15)),6), @Rght_Easting, @Rght_Northing, @Rght_Height,
+									@CurrentTrack + '-CL-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(10,1)) as varchar(15)),6), (@Left_Easting + @Rght_Easting)/2, 
 									(@Left_Northing + @Rght_Northing)/2, (@Left_Height + @Rght_Height)/2, @Diff_Chainage_Left, @Diff_Chainage_Rght, @CalculationComment)	
 				
 							--Increment the chainage index and repeat the computations
@@ -855,7 +888,7 @@ BEGIN
 		--chainage. Used for reporting purposes.
 		SET @Database_Script =	'USE [TrackGeometry]
 								INSERT INTO ReportingData SELECT CrossMatch.[Calculation_ID], [Point_Name] as [Parent_Instrument], CrossMatch.[Track_Code] + ''-'' + 
-								RIGHT(''00''+CAST(CAST([Track_CL_Chainage] as decimal(5,0)) as varchar),3) as [Geometry_Instrument],[Track_Chainage] as [Point_Chainage], 
+								RIGHT(''00''+CAST(CAST([Track_CL_Chainage] as decimal(10,0)) as varchar),3) as [Geometry_Instrument],[Track_Chainage] as [Point_Chainage], 
 								[Track_CL_Chainage] as [Calculation_Chainage], [Track_CL_Chainage]-[Track_Chainage] as [Chainage_Diff],	[Point_Epoch], 
 								[DataWindow_End] as [Calculation_Epoch], [Point_ExpTime_DD], [Rail_Cant], [Rail_Gauge],	[Twist_Short], [Twist_Long], [LR_ID], [LR_Easting], 
 								[LR_Northing], [LR_Height], [LR_Radius], [LR_Top_Short], [LR_Top_Long], [LR_Line_Short], [LR_Line_Long], [RR_ID], [RR_Easting], [RR_Northing],
@@ -863,20 +896,20 @@ BEGIN
 								[CL_Height], [CL_Radius], [CL_Top_Short], [CL_Top_Long], [CL_Line_Short], [CL_Line_Long], [Diff_Chainage_Left],	[Diff_Chainage_Rght], 
 								[Calculation_Comment] 
 								FROM #PrismData CROSS APPLY (SELECT TOP (1) * FROM #TrackGeometry ORDER BY ABS(#TrackGeometry.[Track_CL_Chainage] - #PrismData.[Track_Chainage]), 
-								#TrackGeometry.[Track_CL_Chainage]) AS CrossMatch'
+								#TrackGeometry.[Track_CL_Chainage]) AS CrossMatch
+								ORDER BY [Track_CL_Chainage]'
 		EXEC (@Database_Script)
 		
 		--Drop the #PrismData and #TrackGeometry tabled in preperation for the next round of calculations
 		DROP TABLE #PrismData
 		DROP TABLE #TrackGeometry
 
-		------------------------------------------------------------------------------------------------------------------------
-		------------------------------------------------------------------------------------------------------------------------
-		--Enable the code below to clear the Geometry history and the PrismHistory tables
-		--SET @Database_Script =	'USE [TrackGeometry] DELETE FROM GeometryHistory DELETE FROM PrismHistory DELETE FROM ReportingData'
-		--EXEC (@Database_Script)
-		------------------------------------------------------------------------------------------------------------------------
-		------------------------------------------------------------------------------------------------------------------------
+		IF @Debug = 2
+			BEGIN
+				--Enable the code below to clear the Geometry history and the PrismHistory tables
+				SET @Database_Script =	'USE [TrackGeometry] DELETE FROM GeometryHistory DELETE FROM PrismHistory DELETE FROM ReportingData'
+				EXEC (@Database_Script)
+			END
 	END
 
 	-- Increase @Trackcounter index for next round of track calculations
@@ -895,7 +928,7 @@ BEGIN
 	PRINT ' - Total number of prisms extracted for calculations: '+ CAST(@PrismTotalCount as varchar) + '.'
 	PRINT ' - Total number of prisms failing the overdue data check: '+ CAST(@OverdueTotalCount as varchar) + '.'
 	PRINT ' - Total number of calculation warnings recieved: '+ CAST(@CalculationWarning as varchar) + '.'
-	PRINT ' - Calculations completed in: '+ CAST(CAST((DATEDIFF(ms, @CurrentDateTime, GETDATE())/1000.0) as decimal(4,2)) as varchar) + ' seconds.'
+	PRINT ' - Calculations completed in: '+ CAST(CAST((DATEDIFF(ms, @CurrentDateTime, GETDATE())/1000.0) as decimal(10,2)) as varchar) + ' seconds.'
 END
 
 IF @ErrorLevel = 1
