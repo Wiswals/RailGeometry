@@ -1,0 +1,124 @@
+
+=============================================================================================================================================================
+02/10/201913:04:33.45 - Automated Track Geometry initiated.
+02/10/201913:04:33.60 - Extracting user values from the configuration file...
+02/10/201913:04:33.60 - Error, the configuration file C:\Users\LewisW\Desktop\Testing\ATG_Configure.ini could not be found.
+02/10/201913:04:33.60 - Batch file terminated.
+=============================================================================================================================================================
+
+=============================================================================================================================================================
+02/10/201913:04:38.15 - Automated Track Geometry initiated.
+02/10/201913:04:38.27 - Extracting user values from the configuration file...
+02/10/201913:04:38.28 - Error, the configuration file C:\Users\LewisW\Desktop\Testing\ATG_Configure.ini could not be found.
+02/10/201913:04:38.28 - Batch file terminated.
+=============================================================================================================================================================
+
+=============================================================================================================================================================
+02/10/201913:05:29.70 - Automated Track Geometry initiated.
+02/10/201913:05:29.83 - Extracting user values from the configuration file...
+
+02/10/201913:05:29.85 - Testing server connection to LSSYDGEOMOS01...
+02/10/201913:05:30.91 - Server connected.
+02/10/201913:05:30.91 - Testing database connection to CSMW-001...
+02/10/201913:05:31.88 - Database connected.
+
+02/10/201913:05:31.89 - Running track initalisation script...
+**********************************************************************************
+02/10/2019 15:05:33:420 | Functions added to database.
+Changed database context to 'TrackGeometry'.
+02/10/2019 15:05:33:530 | Initialisation script finished.
+**********************************************************************************
+02/10/201913:05:33.64 - Running track geometry calculation script...
+**********************************************************************************
+CURRENT SCRIPT SETTINGS:
+ - Calculation frequency: 0 min | Repeat calcualtions if last calculations were performed more than 0 minutes ago.
+ - Data extraction window: 96 hrs | Gather GeoMoS prism data that has been observed within the last 96 hours.
+ - Send overdue data email: 1 | 1 = enabled (send email), 0 = disabled (dont send email). Ignore the limit below if emails are disabled.
+ - Overdue data limit: 72 hrs | Report any prisms that have not had readings taken within the last 72 hours.
+ - Prism spacing limit: 7.2m | Do not perform track coordinate interpolation when prism data is seperated by more than 7.2 meters.
+ - Track interpolation step: 1.2m | Calculate interpolated track locations at chainages increasing in 1.2 meter steps.
+ - Short Twist Step: 2.4m | Chainage spacing for short twist calculations (looking back from the calculation chainage).
+ - Long Twist Step: 14.4m | Chainage spacing for long twist calculations (looking back from the calculation chainage).
+ - Short Line Chord: 4.8m | Chord length for short line (horizontal versine) calculations (looking back and foward half of the chord length from the calculation chainage).
+ - Long Line Chord: 9.6m |  Chord length for long line (horizontal versine) calculations (looking back and foward half of the chord length from the calculation chainage).
+ - Short Top Chord: 4.8m |  Chord length for short top (vertical versine) calculations (looking back and foward half of the chord length from the calculation chainage).
+ - Long Top Chord: 9.6m | Chord length for long top (vertical versine) calculations (looking back and foward half of the chord length from the calculation chainage).
+ - Left Rail Indicator: RPL | String identifer for left rail points. Must match with left rail names from GeoMoS.
+ - Right Rail Indicator: RPR | String identifer for right rail points. Must match with right rail names from GeoMoS.
+COMMENCING TRACK GEOMETRY CALCULATIONS:
+ 2 tracks currently enabled for calculation.
+ 2 tracks currently within the specified calculation window.
+ - Calculation set: 10.
+   Track Code: R12, Track ID: 1.
+   02/10/2019 15:05:34:937 | Starting prism data extraction.
+   02/10/2019 15:05:34:960 | 0 valid observations extracted.
+   02/10/2019 15:05:34:960 | Skipping track geometry routine.
+ - Calculation set: 11.
+   Track Code: R14, Track ID: 2.
+   02/10/2019 15:05:34:977 | Starting prism data extraction.
+   02/10/2019 15:05:34:980 | 0 valid observations extracted.
+   02/10/2019 15:05:34:980 | Skipping track geometry routine.
+TRACK GEOMETRY CALCULATIONS COMPLETE:
+ - Total number of prisms extracted for calculations: 0.
+ - Total number of prisms failing the overdue data check: 0.
+ - Total number of calculation warnings recieved: 0.
+ - Calculations completed in: 0.09 seconds.
+02/10/2019 15:05:34:980 | Exiting Track Geometry script
+**********************************************************************************
+02/10/201913:05:35.11 - Automated Track Geometry completed.
+=============================================================================================================================================================
+
+=============================================================================================================================================================
+02/10/201913:06:15.33 - Automated Track Geometry initiated.
+02/10/201913:06:15.46 - Extracting user values from the configuration file...
+
+02/10/201913:06:15.47 - Testing server connection to LSSYDGEOMOS01...
+02/10/201913:06:16.39 - Server connected.
+02/10/201913:06:16.39 - Testing database connection to CSMW-001...
+02/10/201913:06:17.42 - Database connected.
+
+02/10/201913:06:17.43 - Running track initalisation script...
+**********************************************************************************
+02/10/2019 15:06:19:043 | Functions added to database.
+Changed database context to 'TrackGeometry'.
+02/10/2019 15:06:19:200 | Initialisation script finished.
+**********************************************************************************
+02/10/201913:06:19.38 - Running track geometry calculation script...
+**********************************************************************************
+CURRENT SCRIPT SETTINGS:
+ - Calculation frequency: 0 min | Repeat calcualtions if last calculations were performed more than 0 minutes ago.
+ - Data extraction window: 96 hrs | Gather GeoMoS prism data that has been observed within the last 96 hours.
+ - Send overdue data email: 1 | 1 = enabled (send email), 0 = disabled (dont send email). Ignore the limit below if emails are disabled.
+ - Overdue data limit: 72 hrs | Report any prisms that have not had readings taken within the last 72 hours.
+ - Prism spacing limit: 7.2m | Do not perform track coordinate interpolation when prism data is seperated by more than 7.2 meters.
+ - Track interpolation step: 1.2m | Calculate interpolated track locations at chainages increasing in 1.2 meter steps.
+ - Short Twist Step: 2.4m | Chainage spacing for short twist calculations (looking back from the calculation chainage).
+ - Long Twist Step: 14.4m | Chainage spacing for long twist calculations (looking back from the calculation chainage).
+ - Short Line Chord: 4.8m | Chord length for short line (horizontal versine) calculations (looking back and foward half of the chord length from the calculation chainage).
+ - Long Line Chord: 9.6m |  Chord length for long line (horizontal versine) calculations (looking back and foward half of the chord length from the calculation chainage).
+ - Short Top Chord: 4.8m |  Chord length for short top (vertical versine) calculations (looking back and foward half of the chord length from the calculation chainage).
+ - Long Top Chord: 9.6m | Chord length for long top (vertical versine) calculations (looking back and foward half of the chord length from the calculation chainage).
+ - Left Rail Indicator: RPL | String identifer for left rail points. Must match with left rail names from GeoMoS.
+ - Right Rail Indicator: RPR | String identifer for right rail points. Must match with right rail names from GeoMoS.
+COMMENCING TRACK GEOMETRY CALCULATIONS:
+ 2 tracks currently enabled for calculation.
+ 2 tracks currently within the specified calculation window.
+ - Calculation set: 10.
+   Track Code: R12, Track ID: 1.
+   02/10/2019 15:06:20:843 | Starting prism data extraction.
+   02/10/2019 15:06:20:867 | 0 valid observations extracted.
+   02/10/2019 15:06:20:867 | Skipping track geometry routine.
+ - Calculation set: 11.
+   Track Code: R14, Track ID: 2.
+   02/10/2019 15:06:20:870 | Starting prism data extraction.
+   02/10/2019 15:06:20:877 | 0 valid observations extracted.
+   02/10/2019 15:06:20:877 | Skipping track geometry routine.
+TRACK GEOMETRY CALCULATIONS COMPLETE:
+ - Total number of prisms extracted for calculations: 0.
+ - Total number of prisms failing the overdue data check: 0.
+ - Total number of calculation warnings recieved: 0.
+ - Calculations completed in: 0.06 seconds.
+02/10/2019 15:06:20:877 | Exiting Track Geometry script
+**********************************************************************************
+02/10/201913:06:21.02 - Automated Track Geometry completed.
+=============================================================================================================================================================

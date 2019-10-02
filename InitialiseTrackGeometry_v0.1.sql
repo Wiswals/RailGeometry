@@ -40,6 +40,13 @@ Date(yyyy-mm-dd)    Author              Comments
 										for a given calculation set. 
 ***************************************************************************************************/
 
+SET DATEFORMAT dmy
+SET XACT_ABORT ON
+SET NOCOUNT ON
+SET ANSI_WARNINGS OFF
+
+PRINT '**********************************************************************************'
+--PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | Starting initialisation script.'
 ------------------------------------------------ Parse String Function------------------------------------------------
 -- Interrogates and returns character values in a given String using the provided Search values
 
@@ -173,21 +180,25 @@ BEGIN
 END
 GO
 
+PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | Functions added to database.'
 
 ------------------------------------------------ Create TrackGeometry ------------------------------------------------
 --Used databse for all the track geometry calculations
 IF DB_ID ('TrackGeometry') IS NULL
-CREATE DATABASE TrackGeometry;
-GO
+	BEGIN
+		CREATE DATABASE TrackGeometry;
+		PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | TrackGeometry database created.'
+	END
+	GO
 
 USE [TrackGeometry]
-
 ---------------------------------------------- Create TrackListing Table ----------------------------------------------
 --Used for storing track details of each rail line which requires geometry calculations
 IF OBJECT_ID (N'dbo.TrackListing', N'U') IS NULL
 BEGIN
 CREATE TABLE	TrackListing		([ID] int IDENTITY(1,1) PRIMARY KEY, [Track_Name] varchar(255), [Track_Code] varchar(127), [Track_Details] varchar (max), 
 									[Calculation_Status] bit, [Expected_Database] varchar(255), [Calculation_Time] datetime)
+				PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | TrackListing table created.'
 END
 
 ---------------------------------------------- Create GeometryHistory Table ----------------------------------------------
@@ -204,6 +215,7 @@ CREATE TABLE	GeometryHistory		([Calculation_ID] int, [Track_CL_Chainage] decimal
 									[CL_Northing] decimal (20,6), [CL_Height] decimal (20,6), [CL_Radius] decimal (20,6), [CL_Top_Short] decimal (20,6),
 									[CL_Top_Long] decimal (20,6), [CL_Line_Short] decimal (20,6), [CL_Line_Long] decimal (20,6), [Diff_Chainage_Left] decimal(20,6), 
 									[Diff_Chainage_Rght] decimal(20,6), [Calculation_Comment] varchar(max))
+				PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | GeometryHistory table created.'
 END
 
 ---------------------------------------------- Create ReportingData Table ----------------------------------------------
@@ -221,6 +233,7 @@ CREATE TABLE	ReportingData		([Calculation_ID] int, [Parent_Instrument] varchar (
 									[CL_ID] varchar(100), [CL_Easting] decimal (20,6), [CL_Northing] decimal (20,6), [CL_Height] decimal (20,6), 
 									[CL_Radius] decimal (20,6), [CL_Top_Short] decimal (20,6),[CL_Top_Long] decimal (20,6), [CL_Line_Short] decimal (20,6), 
 									[CL_Line_Long] decimal (20,6),[Diff_Chainage_Left] decimal(20,6), [Diff_Chainage_Rght] decimal(20,6), [Calculation_Comment] varchar(max))
+				PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | ReportingData table created.'
 END
 
 ---------------------------------------------- Create PrismHistory Table ----------------------------------------------
@@ -233,4 +246,8 @@ CREATE TABLE	PrismHistory		([Calculation_ID] int, [Point_Name] nvarchar(100) NUL
 									[Point_Northing] decimal(30,10) NULL, [Point_Height] decimal(30,10) NULL, [Point_EOffset] decimal(30,10) NULL, [Point_NOffset] decimal(30,10) NULL,
 									[Point_HOffset] decimal(30,10) NULL,	[Track_Chainage] decimal(30,10) NULL, [Track_RailSide] nvarchar(50) NULL, [Track_Code] nvarchar(100) NULL,
 									[Track_Easting] decimal(30,10) NULL,	[Track_Northing] decimal(30,10) NULL, [Track_Height] decimal(30,10) NULL)
+				PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | PrismHistory table created.'
 END
+
+PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | Initialisation script finished.'
+PRINT '**********************************************************************************' + Char(13)

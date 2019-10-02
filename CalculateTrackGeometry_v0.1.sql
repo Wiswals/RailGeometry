@@ -64,10 +64,10 @@ SET ANSI_WARNINGS OFF
 --===============================================================================================================================
 -- Set and declare variables
 --===============================================================================================================================
-DECLARE @Debug as int = 2								-- If set to 0 = live automation from exe, 1 = Psuedo live (keep data), 2 = dubug mode (clear and reset tables)
+DECLARE @Debug as int = 0								-- If set to 0 = live automation from exe, 1 = Psuedo live (keep data), 2 = dubug mode (clear and reset tables)
 
 --User Input
-DECLARE @CalculationFrequency as int = 0					-- The required frequency (in minutes) of calcualtions. i.e the time spacing between required calculations.
+DECLARE @CalculationFrequency as int = 0				-- The required frequency (in minutes) of calcualtions. i.e the time spacing between required calculations.
 DECLARE @DataExtractionWindow as int = 96				-- Number of hours to look back when extracting data for the calculations
 DECLARE @OverdueDataWarning as int = 72					-- Number of hours by which a prism will be flagged as having overdue (old) observations. Observations will still be used in calculations, however a warning will be sent to email recipents.
 DECLARE @SendOverdueEmail as bit = 0					-- Identifier to enable or disable the sending of email alerts (1 = enable, 0 = disable)
@@ -90,29 +90,30 @@ DECLARE @EmailRecipients varchar(max) = 'lwalsh@landsurveys.net.au'		-- Recipien
 
 --For setting variable values from sqlcmd prompt
 IF (@Debug = 0) 
-	SELECT	@CalculationFrequency = '$(CalculationWindow)', 
-			@DataExtractionWindow = '$(DataExtractionWindow)',
-			@OverdueDataWarning = '$(OverdueDataWarning)',
-			@SendOverdueEmail = '$(SendOverdueEmail)',
-			@PrismSpacingLimit = '$(PrismSpacingLimit)',
+	BEGIN
 
-			@ChainageStep = '$(ChainageStep)',
-			@ShortTwistStep = '$(ShortTwistStep)',
-			@LongTwistStep = '$(LongTwistStep)',
+		IF '$(CalculationFrequency)' IS NULL OR '$(CalculationFrequency)'='' OR '$(CalculationFrequency)'<0 SET @CalculationFrequency=0 ELSE SET @CalculationFrequency = CAST('$(CalculationFrequency)' as int)
+		IF '$(DataExtractionWindow)' IS NULL OR '$(DataExtractionWindow)'='' OR '$(DataExtractionWindow)'<0 SET @DataExtractionWindow=96 ELSE SET @DataExtractionWindow = CAST('$(DataExtractionWindow)' as int)
+		IF '$(OverdueDataWarning)' IS NULL OR '$(OverdueDataWarning)'='' OR '$(OverdueDataWarning)'<0 SET @OverdueDataWarning=72 ELSE SET @OverdueDataWarning = CAST('$(OverdueDataWarning)' as int)
+		IF '$(SendOverdueEmail)' IS NULL OR '$(SendOverdueEmail)'='' OR ('$(SendOverdueEmail)'<0 OR '$(SendOverdueEmail)'>1) SET @SendOverdueEmail=0 ELSE SET @SendOverdueEmail = CAST('$(SendOverdueEmail)' as bit)
+		IF '$(PrismSpacingLimit)' IS NULL OR '$(PrismSpacingLimit)'='' OR '$(PrismSpacingLimit)'<CAST(0.0 as decimal (30,10)) SET @PrismSpacingLimit=4.0 ELSE SET @PrismSpacingLimit = CAST('$(PrismSpacingLimit)' as decimal(30,10))
+		IF '$(ChainageStep)' IS NULL OR '$(ChainageStep)'='' OR '$(ChainageStep)'<CAST(0.0 as decimal (30,10)) SET @ChainageStep=1.0 ELSE SET @ChainageStep = CAST('$(ChainageStep)' as decimal(30,10))
+		IF '$(ShortTwistStep)' IS NULL OR '$(ShortTwistStep)'='' OR '$(ShortTwistStep)'<CAST(0.0 as decimal (30,10)) SET @ShortTwistStep=2.0 ELSE SET @ShortTwistStep = CAST('$(ShortTwistStep)' as decimal(30,10)) 
+		IF '$(LongTwistStep)' IS NULL OR '$(LongTwistStep)'='' OR '$(LongTwistStep)'<CAST(0.0 as decimal (30,10)) SET @LongTwistStep=14.0 ELSE SET @LongTwistStep = CAST('$(LongTwistStep)' as decimal(30,10))
+		IF '$(ShortLineChord)' IS NULL OR '$(ShortLineChord)'='' OR '$(ShortLineChord)'<CAST(0.0 as decimal (30,10)) SET @ShortLineChord=10.0 ELSE SET @ShortTopChord = CAST('$(ShortTopChord)' as decimal(30,10))
+		IF '$(LongTopChord)' IS NULL OR '$(LongTopChord)'='' OR '$(LongTopChord)'<CAST(0.0 as decimal (30,10)) SET @LongLineChord=20.0 ELSE SET @LongLineChord = CAST('$(LongLineChord)' as decimal(30,10))
+		IF '$(ShortTopChord)' IS NULL OR '$(ShortTopChord)'='' OR '$(ShortTopChord)'<CAST(0.0 as decimal (30,10)) SET @ShortTopChord=10.0 ELSE SET @ShortTopChord = CAST('$(ShortTopChord)' as decimal(30,10))
+		IF '$(LongTopChord)' IS NULL OR '$(LongTopChord)'='' OR '$(LongTopChord)'<CAST(0.0 as decimal (30,10)) SET @LongTopChord=20.0 ELSE SET @LongTopChord = CAST('$(LongTopChord)' as decimal(30,10))
+		IF '$(LeftRailIndicator)'='' SET @LeftRailIndicator='L' ELSE SET @LeftRailIndicator= '$(LeftRailIndicator)'
+		IF '$(RightRailIndicator)'='' SET @RightRailIndicator='R' ELSE SET @RightRailIndicator='$(RightRailIndicator)'
+		IF '$(EmailProfile)'='' SET @EmailProfile='' ELSE SET @EmailProfile='$(EmailProfile)'
+		IF '$(EmailRecipients)'='' SET @EmailRecipients='' ELSE SET @EmailRecipients='$(EmailRecipients)'
 
-			@ShortLineChord = '$(ShortLineChord)',
-			@LongLineChord = '$(LongLineChord)',
-			@ShortTopChord = '$(ShortTopChord)',
-			@LongTopChord = '$(LongTopChord)',
-
-			@LeftRailIndicator = '$(LeftRailIndicator)',
-			@RightRailIndicator = '$(RightRailIndicator)',
-			@EmailProfile = '$(EmailProfile)',
-			@EmailRecipients = '$(EmailRecipients)';
+	END
 
 --Print settings to log file
-PRINT '=============================================================================================================='
-PRINT CONVERT(varchar, GETDATE(), 109) + ' | Starting Track Geometry script' + Char(13)
+PRINT '**********************************************************************************'
+--PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Starting Track Geometry script' + Char(13)
 PRINT 'CURRENT SCRIPT SETTINGS:'  + Char(13) 
 PRINT ' - Calculation frequency: '+ CAST(@CalculationFrequency as varchar) + ' min | Repeat calcualtions if last calculations were performed more than ' + CAST(@CalculationFrequency as varchar) + ' minutes ago.'
 PRINT ' - Data extraction window: ' + CAST(@DataExtractionWindow as varchar) + ' hrs | Gather GeoMoS prism data that has been observed within the last ' + CAST(@DataExtractionWindow as varchar) + ' hours.'
@@ -252,8 +253,9 @@ BEGIN
 			--===============================================================================================================================================
 			-- Gather prism data and offset to track
 			--===============================================================================================================================================
-			PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Starting prism data extraction.'
+			PRINT '   ' + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Starting prism data extraction.'
 			--Create temporary table #PrismData to store all the required prism and track coordinate data
+			IF OBJECT_ID ('tempdb..#PrismData') IS NULL 
 			CREATE TABLE	#PrismData	([Calculation_ID] int, [Point_Name] nvarchar(100) NULL, [Point_Epoch] dateTime NULL, [Point_Group] nvarchar(100) NULL, 
 										[Point_ExpTime_DD] decimal(38,10) NULL, [Point_ExpTime_DHM] varchar (100) NULL, [Point_Easting] decimal(38,10) NULL,
 										[Point_Northing] decimal(38,10) NULL, [Point_Height] decimal(38,10) NULL, [Point_EOffset] decimal(38,10) NULL, [Point_NOffset] decimal(38,10) NULL,
@@ -289,17 +291,18 @@ BEGIN
 			--Get prism extraction data for printing results of extraction to log
 			SELECT @PrismCount = COUNT([Point_Name]) FROM #PrismData
 			SET @PrismTotalCount = @PrismTotalCount + @PrismCount
-			PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | ' + CAST(@PrismCount as varchar) + ' valid observations extracted.'
+			PRINT '   ' + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | ' + CAST(@PrismCount as varchar) + ' valid observations extracted.'
 
 			--IF there is no prism data for the current track, skip the interpolation and and track geometry calculation steps
 			IF @PrismCount = 0
-				PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Skipping track geometry routine.'
+				PRINT '   ' + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Skipping track geometry routine.'
 			ELSE
 				BEGIN
 					--===============================================================================================================================================
 					-- Begin building of track geometry table
 					--===============================================================================================================================================
-					PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Starting track interpolation calculations at a ' + CAST(CAST(@ChainageStep as decimal(10,1)) as varchar) + ' meter step.'
+					PRINT '   ' + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Starting track interpolation calculations at a ' + CAST(CAST(@ChainageStep as decimal(10,1)) as varchar) + ' meter step.'
+					IF OBJECT_ID ('tempdb..#TrackGeometry') IS NULL 
 					CREATE TABLE #TrackGeometry	([Calculation_ID] int, [Track_CL_Chainage] decimal(38,10), [Track_Code] varchar(100) NULL, [DataWindow_Start] datetime, [DataWindow_End] datetime,
 												[Rail_Cant] decimal (20,6), [Rail_Gauge] decimal (20,6), [Twist_Short] decimal(38,10), [Twist_Long] decimal (20,6),
 												[LR_ID] varchar(100), [LR_Easting] decimal (20,6), [LR_Northing] decimal (20,6), [LR_Height] decimal (20,6), 
@@ -400,7 +403,7 @@ BEGIN
 					--===============================================================================================================================================
 					--Reset chainage index
 					SET @ChainageIndex = @MinChainage
-					PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Starting track geometry calculations.'
+					PRINT '   ' + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Starting track geometry calculations.'
 					WHILE @ChainageIndex <= @MaxChainage
 					BEGIN
 
@@ -847,16 +850,17 @@ BEGIN
 		--===============================================================================================================================================
 		-- Create and store results to temporary and permenant tables
 		--===============================================================================================================================================
-		PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Storing results into [TrackGeometry] database.'
-		--If first round of calculations create a header template for the temporary storage of results
-		IF @TrackCounter = 1
-		BEGIN
-			--Create headers for ##OverdueData 
-			SELECT	[Point_Name], [Point_Epoch], [Point_Group], [Point_ExpTime_DD], [Point_ExpTime_DHM], [Point_Easting], [Point_Northing], [Point_Height], [Track_Code] 
-			INTO	##OverdueData 
-			FROM	#PrismData 
-			WHERE	1=2
-		END
+		PRINT '   ' + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Storing results into [TrackGeometry] database.'
+		
+		--If first round of storage create a header template for the temporary storage of results
+		IF OBJECT_ID ('tempdb..#ReportingData') IS NULL 
+			BEGIN
+				--Create headers for ##OverdueData 
+				SELECT	[Point_Name], [Point_Epoch], [Point_Group], [Point_ExpTime_DD], [Point_ExpTime_DHM], [Point_Easting], [Point_Northing], [Point_Height], [Track_Code] 
+				INTO	##OverdueData 
+				FROM	#PrismData 
+				WHERE	1=2
+			END
 
 		--Make a copy of overdue data for later error reporting
 		INSERT INTO ##OverdueData 
@@ -1028,5 +1032,5 @@ BEGIN
 		END
 END
 
-PRINT Char(13) + CONVERT(varchar, GETDATE(), 109) + ' | Exiting Track Geometry script'
-PRINT '==============================================================================================================' + Char(13)
+PRINT Char(13) + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Exiting Track Geometry script'
+PRINT '**********************************************************************************' + Char(13)
