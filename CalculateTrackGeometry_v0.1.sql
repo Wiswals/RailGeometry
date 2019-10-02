@@ -112,7 +112,7 @@ IF (@Debug = 0)
 	END
 
 --Print settings to log file
-PRINT '**********************************************************************************'
+--PRINT '----------------------------'
 --PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Starting Track Geometry script' + Char(13)
 PRINT 'CURRENT SCRIPT SETTINGS:'  + Char(13) 
 PRINT ' - Calculation frequency: '+ CAST(@CalculationFrequency as varchar) + ' min | Repeat calcualtions if last calculations were performed more than ' + CAST(@CalculationFrequency as varchar) + ' minutes ago.'
@@ -1033,4 +1033,4 @@ BEGIN
 END
 
 PRINT Char(13) + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Exiting Track Geometry script'
-PRINT '**********************************************************************************' + Char(13)
+--PRINT '----------------------------' + Char(13)

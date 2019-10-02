@@ -45,7 +45,7 @@ SET XACT_ABORT ON
 SET NOCOUNT ON
 SET ANSI_WARNINGS OFF
 
-PRINT '**********************************************************************************'
+--PRINT '----------------------------'
 --PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | Starting initialisation script.'
 ------------------------------------------------ Parse String Function------------------------------------------------
 -- Interrogates and returns character values in a given String using the provided Search values
@@ -250,4 +250,4 @@ CREATE TABLE	PrismHistory		([Calculation_ID] int, [Point_Name] nvarchar(100) NUL
 END
 
 PRINT convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14)  + ' | Initialisation script finished.'
-PRINT '**********************************************************************************' + Char(13)
+--PRINT '----------------------------' + Char(13)

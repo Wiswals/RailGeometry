@@ -6,8 +6,8 @@ SET Config_File=%Directory%ATG_Configure.ini
 
 @echo.>>%Log_File%
 @echo =============================================================================================================================================================>>%Log_File%
-@echo %date%%time% - Automated Track Geometry initiated.>>%Log_File%
-@echo %date%%time% - Automated Track Geometry initiated.
+@echo %date% %time% - Automated Track Geometry initiated.>>%Log_File%
+@echo %date% %time% - Automated Track Geometry initiated.
 
 rem Check the licence for this software is valid.
 set Licence=30/10/2021
@@ -24,21 +24,21 @@ set "Today=%Today:~-2%%Today:~3,2%%Today:~0,2%"
 
 if %Today% GTR %Licence% (
     @echo.>>%Log_File%
-    @echo %date%%time% - Error, software licence has expired, please contact lwalsh@landsurveys.net.au to renew.>>%Log_File%
+    @echo %date% %time% - Error, software licence has expired, please contact lwalsh@landsurveys.net.au to renew.>>%Log_File%
     @echo =============================================================================================================================================================>>%Log_File%
     set /p Error=Press ENTER to exit...
 	Exit)
 
 
 rem Get configuration settings from the .ini file
-@echo %date%%time% - Extracting user values from the configuration file...>>%Log_File%
-@echo %date%%time% - Extracting user values from the configuration file.
+@echo %date% %time% - Extracting user values from the configuration file...>>%Log_File%
+@echo %date% %time% - Extracting user values from the configuration file.
 
 if exist %Config_File% ( goto File_read ) else ( goto File_err_handler )
 
 :File_err_handler
-	@echo %date%%time% - Error, the configuration file %Config_File% could not be found.>>%Log_File%
-	@echo %date%%time% - Batch file terminated.>>%Log_File%
+	@echo %date% %time% - Error, the configuration file %Config_File% could not be found.>>%Log_File%
+	@echo %date% %time% - Batch file terminated.>>%Log_File%
     @echo =============================================================================================================================================================>>%Log_File%
 	Exit
 
@@ -84,24 +84,24 @@ if exist %Config_File% ( goto File_read ) else ( goto File_err_handler )
     @echo.>>%Log_File%
 
 rem Test the connection to the specified server
-@echo %date%%time% - Testing server connection to %ServerName%...>>%Log_File%
+@echo %date% %time% - Testing server connection to %ServerName%...>>%Log_File%
 sqlcmd -S "%ServerName%" -E -Q " "
 
 if ERRORLEVEL 1 goto Connection_err_handler
 		        goto Connection_made
 
 	:Connection_err_handler
-	@echo %date%%time% - SQLCMD returned %errorlevel% to the command shell.... Error could not connect to specified server.>>%Log_File%
-	@echo %date%%time% - Batch file terminated.>>%Log_File%
+	@echo %date% %time% - SQLCMD returned %errorlevel% to the command shell.... Error could not connect to specified server.>>%Log_File%
+	@echo %date% %time% - Batch file terminated.>>%Log_File%
     @echo =============================================================================================================================================================>>%Log_File%
 	Exit
 	
 	:Connection_made
-	@echo %date%%time% - Server connected.>>%Log_File%
-    @echo %date%%time% - Server connected.
+	@echo %date% %time% - Server connected.>>%Log_File%
+    @echo %date% %time% - Server connected.
 
 rem Test the connection to the specified database
-@echo %date%%time% - Testing database connection to %DatabaseName%...>>%Log_File%
+@echo %date% %time% - Testing database connection to %DatabaseName%...>>%Log_File%
 set Query="SET NOCOUNT ON; SELECT CASE WHEN COUNT(name) = 0 Then 'Doesnt Exsist' else 'Database Exsits' end AS DatabaseCheck FROM sys.databases WHERE name LIKE '%DatabaseName%'"
 
 sqlcmd -S "%ServerName%" -E -Q %Query% -h -1 -o "%Directory%temp.txt"
@@ -109,26 +109,27 @@ set /P DatabaseResult= < "%Directory%temp.txt"
 del "%Directory%temp.txt"
 
 IF "%DatabaseResult%"=="Doesnt Exsist  " (
-	@echo %date%%time% - Error, database not recognised or unable to connect, please try again.>>%Log_File%
+	@echo %date% %time% - Error, database not recognised or unable to connect, please try again.>>%Log_File%
     @echo =============================================================================================================================================================>>%Log_File%
 	Exit )
 	
-@echo %date%%time% - Database connected.>>%Log_File%
-@echo %date%%time% - Database connected.
+@echo %date% %time% - Database connected.>>%Log_File%
+@echo %date% %time% - Database connected.
 @echo.>>%Log_File%
 
-@echo %date%%time% - Running track initalisation script...>>%Log_File%
-@echo %date%%time% - Running track initalisation script.
+@echo %date% %time% - Running track initalisation script...>>%Log_File%
+@echo %date% %time% - Running track initalisation script.
 rem Run the inalisation script - %b2eincfile1%
 sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "C:\Users\LewisW\Dropbox\Programming\GitHub\RailGeometry\InitialiseTrackGeometry_v0.1.sql" -h -1 >>%Log_File%
+@echo.>>%Log_File%
 
-@echo %date%%time% - Running track geometry calculation script...>>%Log_File%
-@echo %date%%time% - Running track geometry calculation script.
+@echo %date% %time% - Running track geometry calculation script...>>%Log_File%
+@echo %date% %time% - Running track geometry calculation script.
 rem Run the automated track geometry script
 sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "C:\Users\LewisW\Dropbox\Programming\GitHub\RailGeometry\CalculateTrackGeometry_v0.1.sql" -v CalculationFrequency="%CalculationFrequency%" DataExtractionWindow="%DataExtractionWindow%" OverdueDataWarning="%OverdueDataWarning%" SendOverdueEmail="%SendOverdueEmail%" PrismSpacingLimit="%PrismSpacingLimit%" ChainageStep="%ChainageStep%" ShortTwistStep="%ShortTwistStep%" LongTwistStep="%LongTwistStep%" ShortLineChord="%ShortLineChord%" LongLineChord="%LongLineChord%" ShortTopChord="%ShortTopChord%" LongTopChord="%LongTopChord%" LeftRailIndicator="%LeftRailIndicator%" RightRailIndicator="%RightRailIndicator%" EmailProfile="%EmailProfile%" EmailRecipients="%EmailRecipients%" -h -1 >>%Log_File%
+@echo.>>%Log_File%
 
-
-@echo %date%%time% - Automated Track Geometry completed.>>%Log_File%
-@echo %date%%time% - Automated Track Geometry completed.
+@echo %date% %time% - Automated Track Geometry completed.>>%Log_File%
+@echo %date% %time% - Automated Track Geometry completed.
 @echo =============================================================================================================================================================>>%Log_File%
 set /p Exit=Press ENTER to exit...
