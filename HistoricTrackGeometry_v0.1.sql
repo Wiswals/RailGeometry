@@ -95,9 +95,9 @@ DECLARE @NextRailCalcTime datetime, @EstRunTime as decimal (10,1)
 -----------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------
 --									TO BE UPDATED BY USER	
-SELECT	@StartTimeHistory = '16/09/2019 00:00',		-- 
-		@EndTimeHistory = '27/09/2019 00:00',		-- 
-		@CalculationInterval = 1200,					-- Minutes
+SELECT	@StartTimeHistory = '30/08/2019 00:00',		-- 
+		@EndTimeHistory = '20/09/2019 00:00',		-- 
+		@CalculationInterval = 240,					-- Minutes
 		@SearchWindow = 24							-- Hours 
 -----------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------
@@ -883,22 +883,23 @@ BEGIN
 			-- Create and store results to temporary and permenant tables
 			--===============================================================================================================================================
 			PRINT '   ' + CONVERT(varchar, GETDATE(), 109) + ' | Storing results into [TrackGeometry] database.'
-			--If first round of calculations create a header template for the temporary storage of results
-			IF @CalculationID = 1
-			BEGIN
-				--Create headers for ##OverdueData 
-				SELECT CrossMatch.[Calculation_ID], [Point_Name] as [Parent_Instrument], CrossMatch.[Track_Code] as [Geometry_Instrument],[Track_Chainage] as 
-				[Point_Chainage], [Track_CL_Chainage] as [Calculation_Chainage], [Track_CL_Chainage] as [Chainage_Diff], [Point_Epoch], 
-				[DataWindow_End] as [Calculation_Epoch], [Point_ExpTime_DD], [Point_ExpTime_DHM], [Rail_Cant], [Rail_Gauge],	[Twist_Short], [Twist_Long], [LR_ID], [LR_Easting], 
-				[LR_Northing], [LR_Height], [LR_Radius], [LR_Top_Short], [LR_Top_Long], [LR_Line_Short], [LR_Line_Long], [RR_ID], [RR_Easting], [RR_Northing],
-				[RR_Height], [RR_Radius], [RR_Top_Short], [RR_Top_Long], [RR_Line_Short], [RR_Line_Long], [CL_ID], [CL_Easting], [CL_Northing], 
-				[CL_Height], [CL_Radius], [CL_Top_Short], [CL_Top_Long], [CL_Line_Short], [CL_Line_Long], [Diff_Chainage_Left],	[Diff_Chainage_Rght], 
-				[Calculation_Comment] 
-				INTO #ReportingData
-				FROM #PrismData CROSS APPLY (SELECT TOP (1) * FROM #TrackGeometry ORDER BY ABS(#TrackGeometry.[Track_CL_Chainage] - #PrismData.[Track_Chainage]), 
-				#TrackGeometry.[Track_CL_Chainage]) AS CrossMatch
-				WHERE	1=2
-			END
+			
+			--If first round of storage create a header template for the temporary storage of results
+			IF OBJECT_ID ('tempdb..#ReportingData') IS NULL 
+				BEGIN
+					--Create headers for ##OverdueData 
+					SELECT CrossMatch.[Calculation_ID], [Point_Name] as [Parent_Instrument], CrossMatch.[Track_Code] as [Geometry_Instrument],[Track_Chainage] as 
+					[Point_Chainage], [Track_CL_Chainage] as [Calculation_Chainage], [Track_CL_Chainage] as [Chainage_Diff], [Point_Epoch], 
+					[DataWindow_End] as [Calculation_Epoch], [Point_ExpTime_DD], [Point_ExpTime_DHM], [Rail_Cant], [Rail_Gauge],	[Twist_Short], [Twist_Long], [LR_ID], [LR_Easting], 
+					[LR_Northing], [LR_Height], [LR_Radius], [LR_Top_Short], [LR_Top_Long], [LR_Line_Short], [LR_Line_Long], [RR_ID], [RR_Easting], [RR_Northing],
+					[RR_Height], [RR_Radius], [RR_Top_Short], [RR_Top_Long], [RR_Line_Short], [RR_Line_Long], [CL_ID], [CL_Easting], [CL_Northing], 
+					[CL_Height], [CL_Radius], [CL_Top_Short], [CL_Top_Long], [CL_Line_Short], [CL_Line_Long], [Diff_Chainage_Left],	[Diff_Chainage_Rght], 
+					[Calculation_Comment] 
+					INTO #ReportingData
+					FROM #PrismData CROSS APPLY (SELECT TOP (1) * FROM #TrackGeometry ORDER BY ABS(#TrackGeometry.[Track_CL_Chainage] - #PrismData.[Track_Chainage]), 
+					#TrackGeometry.[Track_CL_Chainage]) AS CrossMatch
+					WHERE	1=2
+				END
 
 			--Store a merge of the #PrismData and #TrackGeometry tables containing all prism locations and the nearest neighbouring geometry calculation based on
 			--chainage. Used for reporting purposes.
@@ -913,8 +914,6 @@ BEGIN
 			FROM #PrismData CROSS APPLY (SELECT TOP (1) * FROM #TrackGeometry ORDER BY ABS(#TrackGeometry.[Track_CL_Chainage] - #PrismData.[Track_Chainage]), 
 			#TrackGeometry.[Track_CL_Chainage]) AS CrossMatch
 			ORDER BY [Track_CL_Chainage]
-				
-			--Drop the #PrismData and #TrackGeometry tabled in preperation for the next round of calculations
 			
 			DROP TABLE #TrackGeometry
 

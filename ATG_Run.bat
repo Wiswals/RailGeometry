@@ -1,3 +1,38 @@
+::[Bat To Exe Converter]
+::
+::fBE1pAF6MU+EWHreyHcjLQlHcCiHK2KpMYk4+ufr7eWfnn0PW+UteYLW07qJHMca/m3xd6of13NWv84DAR5MbAuXRwE9vWdDum2WMvOOsgzqbU2G604kCXxLkTOe3WUocd8I
+::fBE1pAF6MU+EWHreyHcjLQlHcCiHK2KpMYk4+ufr7eWfnn0PW+UteYLW07qJHMca/m3xd6of13NWv84DAR5MbAuXTQ44qntOt3CAA9WdsATGT0eE418iAlpi1y2BwjgqbLM=
+::YAwzoRdxOk+EWAjk
+::fBw5plQjdCyDJGyX8VAjFDdRWw2RC1eeFLoM6ufj086CsUQaWt4TeYHf6aGcNuUK+XnNdpkjxUZqisQLHhpVbS6/fA43omlHuWmAI9WFjFnPXHeA5UQ+VWx3iAM=
+::YAwzuBVtJxjWCl3EqQJgSA==
+::ZR4luwNxJguZRRnk
+::Yhs/ulQjdF+5
+::cxAkpRVqdFKZSzk=
+::cBs/ulQjdF65
+::ZR41oxFsdFKZSDk=
+::eBoioBt6dFKZSDk=
+::cRo6pxp7LAbNWATEpSI=
+::egkzugNsPRvcWATEpCI=
+::dAsiuh18IRvcCxnZtBJQ
+::cRYluBh/LU+EWAnk
+::YxY4rhs+aU+IeA==
+::cxY6rQJ7JhzQF1fEqQJgZksaGErbXA==
+::ZQ05rAF9IBncCkqN+0xwdVsEAlTMaCXjZg==
+::ZQ05rAF9IAHYFVzEqQIRPQ9bQQWWOW/6Mqcd6+O7yO+Ir0gJRvtf
+::eg0/rx1wNQPfEVWB+kM9LVsJDGQ=
+::fBEirQZwNQPfEVWB+kM9LVsJDGQ=
+::cRolqwZ3JBvQF1fEqQJQ
+::dhA7uBVwLU+EWDk=
+::YQ03rBFzNR3SWATElA==
+::dhAmsQZ3MwfNWATEwGQ0EHs=
+::ZQ0/vhVqMQ3MEVWAtB9wSA==
+::Zg8zqx1/OA3MEVWAtB9wSA==
+::dhA7pRFwIByZRRnk
+::Zh4grVQjdCyDJGyX8VAjFDdRWw2RC1eeFLoM6ufj09qVrUoPVe8ycYHc5pOHNMgG6HnWdJ8h8X9Vlc4YHgJkXwe/YQI1vWtG9lCXNsSX8yjkRUWM8lkpVWBsggM=
+::YB416Ek+ZW8=
+::
+::
+::978f952a14a936cc963da21a135fa983
 @echo off
 
 SET Directory=%~dp0
@@ -34,7 +69,7 @@ rem Get configuration settings from the .ini file
 @echo %date% %time% - Extracting user values from the configuration file...>>%Log_File%
 @echo %date% %time% - Extracting user values from the configuration file.
 
-if exist %Config_File% ( goto File_read ) else ( goto File_err_handler )
+if exist "%Config_File%" ( goto File_read ) else ( goto File_err_handler )
 
 :File_err_handler
 	@echo %date% %time% - Error, the configuration file %Config_File% could not be found.>>%Log_File%
@@ -43,7 +78,7 @@ if exist %Config_File% ( goto File_read ) else ( goto File_err_handler )
 	Exit
 
 :File_read 
-    FOR /f "tokens=1,2 delims==, eol=#" %%a IN (%Config_File%) DO (
+    FOR /f "usebackq tokens=1,2 delims==, eol=#" %%a IN ( "%Config_File%" ) DO (
     IF %%a==::ServerName SET ServerName=%%b
     IF %%a==::DatabaseName SET DatabaseName=%%b
     IF %%a==::CalculationFrequency SET CalculationFrequency=%%b
@@ -120,13 +155,13 @@ IF "%DatabaseResult%"=="Doesnt Exsist  " (
 @echo %date% %time% - Running track initalisation script...>>%Log_File%
 @echo %date% %time% - Running track initalisation script.
 rem Run the inalisation script - %b2eincfile1%
-sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "C:\Users\LewisW\Dropbox\Programming\GitHub\RailGeometry\InitialiseTrackGeometry_v0.1.sql" -h -1 >>%Log_File%
+sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "%b2eincfile1%" -h -1 >>%Log_File%
 @echo.>>%Log_File%
 
 @echo %date% %time% - Running track geometry calculation script...>>%Log_File%
 @echo %date% %time% - Running track geometry calculation script.
 rem Run the automated track geometry script
-sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "C:\Users\LewisW\Dropbox\Programming\GitHub\RailGeometry\CalculateTrackGeometry_v0.1.sql" -v CalculationFrequency="%CalculationFrequency%" DataExtractionWindow="%DataExtractionWindow%" OverdueDataWarning="%OverdueDataWarning%" SendOverdueEmail="%SendOverdueEmail%" PrismSpacingLimit="%PrismSpacingLimit%" ChainageStep="%ChainageStep%" ShortTwistStep="%ShortTwistStep%" LongTwistStep="%LongTwistStep%" ShortLineChord="%ShortLineChord%" LongLineChord="%LongLineChord%" ShortTopChord="%ShortTopChord%" LongTopChord="%LongTopChord%" LeftRailIndicator="%LeftRailIndicator%" RightRailIndicator="%RightRailIndicator%" EmailProfile="%EmailProfile%" EmailRecipients="%EmailRecipients%" -h -1 >>%Log_File%
+sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "%b2eincfile2%" -v CalculationFrequency="%CalculationFrequency%" DataExtractionWindow="%DataExtractionWindow%" OverdueDataWarning="%OverdueDataWarning%" SendOverdueEmail="%SendOverdueEmail%" PrismSpacingLimit="%PrismSpacingLimit%" ChainageStep="%ChainageStep%" ShortTwistStep="%ShortTwistStep%" LongTwistStep="%LongTwistStep%" ShortLineChord="%ShortLineChord%" LongLineChord="%LongLineChord%" ShortTopChord="%ShortTopChord%" LongTopChord="%LongTopChord%" LeftRailIndicator="%LeftRailIndicator%" RightRailIndicator="%RightRailIndicator%" EmailProfile="%EmailProfile%" EmailRecipients="%EmailRecipients%" -h -1 >>%Log_File%
 @echo.>>%Log_File%
 
 @echo %date% %time% - Automated Track Geometry completed.>>%Log_File%
