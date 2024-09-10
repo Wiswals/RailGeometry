@@ -48,6 +48,9 @@ Date(yyyy-mm-dd)    Author              Comments
 										tables within the TrackGeometry database.
 2019-09-25			Lewis Walsh			Reconfigured the GeometryReport SELECT statement to accept
 										non-integer chainages (coverting FLOOR to ROUND).
+2021-04-28			Lewis Walsh			Added FORMAT(@ChainageIndex,@ChainageNameFormat) code in multiple locations
+										to overcome the datatype conversion issues (bug from CSMW scripting).
+2021-05-07			Lewis Walsh			Added logic for configiuration file setting of the @ChainageNameFormat variable
 ***************************************************************************************************/
 
 IF OBJECT_ID ('tempdb..##CalculationListing') IS NOT NULL Begin DROP TABLE ##CalculationListing; End
@@ -68,25 +71,26 @@ DECLARE @Debug as int = 0								-- If set to 0 = live automation from exe, 1 = 
 
 --User Input
 DECLARE @CalculationFrequency as int = 0				-- The required frequency (in minutes) of calcualtions. i.e the time spacing between required calculations.
-DECLARE @DataExtractionWindow as int = 96				-- Number of hours to look back when extracting data for the calculations
-DECLARE @OverdueDataWarning as int = 72					-- Number of hours by which a prism will be flagged as having overdue (old) observations. Observations will still be used in calculations, however a warning will be sent to email recipents.
-DECLARE @SendOverdueEmail as bit = 0					-- Identifier to enable or disable the sending of email alerts (1 = enable, 0 = disable)
-DECLARE @PrismSpacingLimit as decimal(38,10) = 7.2		-- A value (in meters) used to check the spacing between track prisms any prisms seperated by more than this value will not get geometry calculations.
+DECLARE @DataExtractionWindow as int = 72				-- Number of hours to look back when extracting data for the calculations
+DECLARE @OverdueDataWarning as int = 48				-- Number of hours by which a prism will be flagged as having overdue (old) observations. Observations will still be used in calculations, however a warning will be sent to email recipents.
+DECLARE @SendOverdueEmail as bit = 1					-- Identifier to enable or disable the sending of email alerts (1 = enable, 0 = disable)
+DECLARE @PrismSpacingLimit as decimal(38,10) = 30		-- A value (in meters) used to check the spacing between track prisms any prisms seperated by more than this value will not get geometry calculations.
 
-DECLARE @ChainageStep decimal(38,10) = 1.2				-- The spacing at which you want to calculate track geometry at. i.e. every x meters.
-DECLARE @ShortTwistStep decimal(38,10) = 2.4			-- The spacing at which short twist should be calculated, looking in reverse chainage.
-DECLARE @LongTwistStep decimal(38,10) = 14.4			-- The spacing at which long twist should be calculated, looking in reverse chainage.
+DECLARE @ChainageStep decimal(38,10) = 0.5				-- The spacing at which you want to calculate track geometry at. i.e. every x meters.
+DECLARE @ShortTwistStep decimal(38,10) = 3.5			-- The spacing at which short twist should be calculated, looking in reverse chainage.
+DECLARE @LongTwistStep decimal(38,10) = 10			-- The spacing at which long twist should be calculated, looking in reverse chainage.
 
-DECLARE @ShortLineChord decimal(38,10) = 4.8			-- The chord length for the short line calculation, looking foward and back half of this length from reference chainage.
-DECLARE @LongLineChord decimal(38,10) = 9.6				-- The chord length for the long line calculation, looking foward and back half of this length from reference chainage.
-DECLARE @ShortTopChord decimal(38,10) = 4.8				-- The chord length for the short top calculation, looking foward and back half of this length from reference chainage.
-DECLARE @LongTopChord decimal(38,10) = 9.6				-- The chord length for the long top calculation, looking foward and back half of this length from reference chainage.
+DECLARE @ShortLineChord decimal(38,10) = 10			-- The chord length for the short line calculation, looking foward and back half of this length from reference chainage.
+DECLARE @LongLineChord decimal(38,10) = 20				-- The chord length for the long line calculation, looking foward and back half of this length from reference chainage.
+DECLARE @ShortTopChord decimal(38,10) = 10				-- The chord length for the short top calculation, looking foward and back half of this length from reference chainage.
+DECLARE @LongTopChord decimal(38,10) = 20				-- The chord length for the long top calculation, looking foward and back half of this length from reference chainage.
 
 DECLARE @LeftRailIndicator varchar(30) = 'RPL'			-- Search string to identify all left rail prisms. Script will try to find a string match in the instrument name and group point as a left rail prism.
 DECLARE @RightRailIndicator varchar(30) = 'RPR'			-- Search string to identify all right rail prisms. Script will try to find a string match in the instrument name and group point as a right rail prism.
 
 DECLARE @EmailProfile varchar(256) = 'Track Geometry Alerts Profile'	-- The name of the email profile for sending alerts.
-DECLARE @EmailRecipients varchar(max) = 'lwalsh@landsurveys.net.au'		-- Recipients list for the email alerts.
+DECLARE @EmailRecipients varchar(max) = 'lwalsh@landsurveys.net.au; dcoulthard@landsurveys.net.au; powsianka@landsurveys.net.au'		-- Recipients list for the email alerts.
+DECLARE @ChainageNameFormat varchar(256) = '#.0'			-- Format string applied to calcualtion chainage when determinig the geometry name for each instrument
 
 --For setting variable values from sqlcmd prompt
 IF (@Debug = 0) 
@@ -100,7 +104,7 @@ IF (@Debug = 0)
 		IF '$(ChainageStep)' IS NULL OR '$(ChainageStep)'='' OR '$(ChainageStep)'<CAST(0.0 as decimal (30,10)) SET @ChainageStep=1.0 ELSE SET @ChainageStep = CAST('$(ChainageStep)' as decimal(30,10))
 		IF '$(ShortTwistStep)' IS NULL OR '$(ShortTwistStep)'='' OR '$(ShortTwistStep)'<CAST(0.0 as decimal (30,10)) SET @ShortTwistStep=2.0 ELSE SET @ShortTwistStep = CAST('$(ShortTwistStep)' as decimal(30,10)) 
 		IF '$(LongTwistStep)' IS NULL OR '$(LongTwistStep)'='' OR '$(LongTwistStep)'<CAST(0.0 as decimal (30,10)) SET @LongTwistStep=14.0 ELSE SET @LongTwistStep = CAST('$(LongTwistStep)' as decimal(30,10))
-		IF '$(ShortLineChord)' IS NULL OR '$(ShortLineChord)'='' OR '$(ShortLineChord)'<CAST(0.0 as decimal (30,10)) SET @ShortLineChord=10.0 ELSE SET @ShortTopChord = CAST('$(ShortTopChord)' as decimal(30,10))
+		IF '$(ShortLineChord)' IS NULL OR '$(ShortLineChord)'='' OR '$(ShortLineChord)'<CAST(0.0 as decimal (30,10)) SET @ShortLineChord=10.0 ELSE SET @ShortLineChord = CAST('$(ShortLineChord)' as decimal(30,10))
 		IF '$(LongTopChord)' IS NULL OR '$(LongTopChord)'='' OR '$(LongTopChord)'<CAST(0.0 as decimal (30,10)) SET @LongLineChord=20.0 ELSE SET @LongLineChord = CAST('$(LongLineChord)' as decimal(30,10))
 		IF '$(ShortTopChord)' IS NULL OR '$(ShortTopChord)'='' OR '$(ShortTopChord)'<CAST(0.0 as decimal (30,10)) SET @ShortTopChord=10.0 ELSE SET @ShortTopChord = CAST('$(ShortTopChord)' as decimal(30,10))
 		IF '$(LongTopChord)' IS NULL OR '$(LongTopChord)'='' OR '$(LongTopChord)'<CAST(0.0 as decimal (30,10)) SET @LongTopChord=20.0 ELSE SET @LongTopChord = CAST('$(LongTopChord)' as decimal(30,10))
@@ -108,6 +112,7 @@ IF (@Debug = 0)
 		IF '$(RightRailIndicator)'='' SET @RightRailIndicator='R' ELSE SET @RightRailIndicator='$(RightRailIndicator)'
 		IF '$(EmailProfile)'='' SET @EmailProfile='' ELSE SET @EmailProfile='$(EmailProfile)'
 		IF '$(EmailRecipients)'='' SET @EmailRecipients='' ELSE SET @EmailRecipients='$(EmailRecipients)'
+		IF '$(ChainageNameFormat)'='' SET @ChainageNameFormat='#.000' ELSE SET @ChainageNameFormat='$(ChainageNameFormat)'
 
 	END
 
@@ -121,6 +126,7 @@ PRINT ' - Send overdue data email: ' + CAST(@SendOverdueEmail as varchar) + ' | 
 PRINT ' - Overdue data limit: ' + CAST(@OverdueDataWarning as varchar) + ' hrs | Report any prisms that have not had readings taken within the last ' + CAST(@OverdueDataWarning as varchar) + ' hours.'
 PRINT ' - Prism spacing limit: ' + CAST(CAST(@PrismSpacingLimit as decimal(5,1)) as varchar) + 'm | Do not perform track coordinate interpolation when prism data is seperated by more than ' + CAST(CAST(@PrismSpacingLimit as decimal(5,1)) as varchar) + ' meters.'
 PRINT ' - Track interpolation step: ' + CAST(CAST(@ChainageStep as decimal(5,1)) as varchar) + 'm | Calculate interpolated track locations at chainages increasing in ' + CAST(CAST(@ChainageStep as decimal(5,1)) as varchar) + ' meter steps.' + Char(13)
+PRINT ' - Geometry name chainage format: '+ CAST(@ChainageNameFormat as varchar) + ' | Format string for chainage coponent of each geometry calculation set.'
 
 PRINT ' - Short Twist Step: '+ CAST(CAST(@ShortTwistStep as decimal(5,1)) as varchar) + 'm | Chainage spacing for short twist calculations (looking back from the calculation chainage).'
 PRINT ' - Long Twist Step: ' + CAST(CAST(@LongTwistStep as decimal(5,1)) as varchar) + 'm | Chainage spacing for long twist calculations (looking back from the calculation chainage).'
@@ -134,6 +140,8 @@ PRINT ' - Right Rail Indicator: ' + CAST(@RightRailIndicator as varchar) + ' | S
 --Check inital user input
 DECLARE @ErrorLevel int = 0
 DECLARE @Calculation_Check int = 0
+DECLARE @FirstRound int = 1
+
 --Check to see if the provided calculation chord lengths and steps are compatable
 IF		@ShortTwistStep%@ChainageStep <> 0 OR 
 		@LongTwistStep%@ChainageStep <> 0 OR 
@@ -388,11 +396,11 @@ BEGIN
 							INSERT INTO #TrackGeometry	([Calculation_ID], [Track_CL_Chainage], [Track_Code], [DataWindow_Start], [DataWindow_End], [Rail_Cant], [Rail_Gauge], [Twist_Short],
 														[Twist_Long], [LR_ID], [LR_Easting], [LR_Northing], [LR_Height], [RR_ID], [RR_Easting], [RR_Northing], [RR_Height], [CL_ID],
 														[CL_Easting], [CL_Northing], [CL_Height], [Diff_Chainage_Left], [Diff_Chainage_Rght], [Calculation_Comment])
-							VALUES	(@CalculationID, ROUND(@ChainageIndex, 2), @CurrentTrack, @ExtractStartTime, @ExtractEndTime, @Track_Cant, @Track_Guage, @Twist_Short, @Twist_Long,
-									@CurrentTrack + '-LR-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(10,1)) as varchar(15)),6), @Left_Easting, @Left_Northing, @Left_Height,
-									@CurrentTrack + '-RR-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(10,1)) as varchar(15)),6), @Rght_Easting, @Rght_Northing, @Rght_Height,
-									@CurrentTrack + '-CL-' + RIGHT('0000'+ CAST(CAST(@ChainageIndex as decimal(10,1)) as varchar(15)),6), (@Left_Easting + @Rght_Easting)/2, 
-									(@Left_Northing + @Rght_Northing)/2, (@Left_Height + @Rght_Height)/2, @Diff_Chainage_Left, @Diff_Chainage_Rght, @CalculationComment)	
+								VALUES	(@CalculationID, ROUND(@ChainageIndex, 2), @CurrentTrack, @ExtractStartTime, @ExtractEndTime, @Track_Cant, @Track_Guage, @Twist_Short, @Twist_Long,
+										@CurrentTrack + '-LR-' + FORMAT(@ChainageIndex,@ChainageNameFormat), @Left_Easting, @Left_Northing, @Left_Height,
+										@CurrentTrack + '-RR-' + FORMAT(@ChainageIndex,@ChainageNameFormat), @Rght_Easting, @Rght_Northing, @Rght_Height,
+										@CurrentTrack + '-CL-' + FORMAT(@ChainageIndex,@ChainageNameFormat), (@Left_Easting + @Rght_Easting)/2, 
+										(@Left_Northing + @Rght_Northing)/2, (@Left_Height + @Rght_Height)/2, @Diff_Chainage_Left, @Diff_Chainage_Rght, @CalculationComment)	
 				
 							--Increment the chainage index and repeat the computations
 							SET @ChainageIndex = @ChainageIndex + @ChainageStep
@@ -852,14 +860,17 @@ BEGIN
 		--===============================================================================================================================================
 		PRINT '   ' + convert(varchar, GETDATE(),103) + ' ' + convert(varchar, GETDATE(), 14) + ' | Storing results into [TrackGeometry] database.'
 		
+		
 		--If first round of storage create a header template for the temporary storage of results
-		IF OBJECT_ID ('tempdb..#ReportingData') IS NULL 
+		IF @FirstRound = 1
 			BEGIN
 				--Create headers for ##OverdueData 
 				SELECT	[Point_Name], [Point_Epoch], [Point_Group], [Point_ExpTime_DD], [Point_ExpTime_DHM], [Point_Easting], [Point_Northing], [Point_Height], [Track_Code] 
 				INTO	##OverdueData 
 				FROM	#PrismData 
 				WHERE	1=2
+
+				SET @FirstRound = 0
 			END
 
 		--Make a copy of overdue data for later error reporting
@@ -891,8 +902,8 @@ BEGIN
 		--Store a merge of the #PrismData and #TrackGeometry tables containing all prism locations and the nearest neighbouring geometry calculation based on
 		--chainage. Used for reporting purposes.
 		SET @Database_Script =	'USE [TrackGeometry]
-								INSERT INTO ReportingData SELECT CrossMatch.[Calculation_ID], [Point_Name] as [Parent_Instrument], CrossMatch.[Track_Code] + ''-'' + 
-								RIGHT(''00''+CAST(CAST([Track_CL_Chainage] as decimal(10,0)) as varchar),3) as [Geometry_Instrument],[Track_Chainage] as [Point_Chainage], 
+								INSERT INTO ReportingData SELECT CrossMatch.[Calculation_ID], [Point_Name] as [Parent_Instrument],  CrossMatch.[Track_Code] + ''-'' + 
+								FORMAT(Track_CL_Chainage,'''+ @ChainageNameFormat +''') as [Geometry_Instrument],[Track_Chainage] as [Point_Chainage], 
 								[Track_CL_Chainage] as [Calculation_Chainage], [Track_CL_Chainage]-[Track_Chainage] as [Chainage_Diff],	[Point_Epoch], 
 								[DataWindow_End] as [Calculation_Epoch], [Point_ExpTime_DD], [Rail_Cant], [Rail_Gauge],	[Twist_Short], [Twist_Long], [LR_ID], [LR_Easting], 
 								[LR_Northing], [LR_Height], [LR_Radius], [LR_Top_Short], [LR_Top_Long], [LR_Line_Short], [LR_Line_Long], [RR_ID], [RR_Easting], [RR_Northing],

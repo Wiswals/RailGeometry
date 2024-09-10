@@ -1,9 +1,9 @@
 ::[Bat To Exe Converter]
 ::
-::fBE1pAF6MU+EWHreyHcjLQlHcCiHK2KpMYk4+ufr7eWfnn0PW+UteYLW07qJHMca/m3xd6of13NWv84DAR5MbAuXRwE9vWdDum2WMvOOsgzqbU2G604kCXxLkTOe3WUocd8I
-::fBE1pAF6MU+EWHreyHcjLQlHcCiHK2KpMYk4+ufr7eWfnn0PW+UteYLW07qJHMca/m3xd6of13NWv84DAR5MbAuXTQ44qntOt3CAA9WdsATGT0eE418iAlpi1y2BwjgqbLM=
+::fBE1pAF6MU+EWHreyHcjLQlHcCiHK2KpEYkz5u3f/eORpw1QFM4+doub6aGcNuUK+XnDfIIlw3hmqsoFADxdcR+ueh0tlUdMv3CMNsuVoArVWEmK7Ww1FGhxk3HJsz1rLoImidIPsw==
+::fBE1pAF6MU+EWHreyHcjLQlHcCiHK2KpEYkz5u3f/eORpw1QFM4+doub6aGcNuUK+XnDfIIlw3hmqsoFADxdcR+ueh0tlU1DumeQO8aItjvzS0uCwU4/FmBglXrvmnt1MZ17i89j
 ::YAwzoRdxOk+EWAjk
-::fBw5plQjdCyDJGyX8VAjFDdRWw2RC1eeFLoM6ufj086CsUQaWt4TeYHf6aGcNuUK+XnNdpkjxUZqisQLHhpVbS6/fA43omlHuWmAI9WFjFnPXHeA5UQ+VWx3iAM=
+::fBw5plQjdCyDJGyX8VAjFDdRWw2RK1eVCLA4+uHt6qrK4mEcWuZ/S5rJzLGXM9w041HsYJQR5HtTlOwJAxZdagCyUhsmqG1JsWGKOsKIoRbeHGaf2UIzFGs6jmDf7A==
 ::YAwzuBVtJxjWCl3EqQJgSA==
 ::ZR4luwNxJguZRRnk
 ::Yhs/ulQjdF+5
@@ -16,8 +16,8 @@
 ::dAsiuh18IRvcCxnZtBJQ
 ::cRYluBh/LU+EWAnk
 ::YxY4rhs+aU+IeA==
-::cxY6rQJ7JhzQF1fEqQJgZksaGErbXA==
-::ZQ05rAF9IBncCkqN+0xwdVsEAlTMaCXjZg==
+::cxY6rQJ7JhzQF1fEqQJgZkoaHErSXA==
+::ZQ05rAF9IBncCkqN+0xwdVsEAlXMbCXqZg==
 ::ZQ05rAF9IAHYFVzEqQIRPQ9bQQWWOW/6Mqcd6+O7yO+Ir0gJRvtf
 ::eg0/rx1wNQPfEVWB+kM9LVsJDGQ=
 ::fBEirQZwNQPfEVWB+kM9LVsJDGQ=
@@ -28,11 +28,47 @@
 ::ZQ0/vhVqMQ3MEVWAtB9wSA==
 ::Zg8zqx1/OA3MEVWAtB9wSA==
 ::dhA7pRFwIByZRRnk
-::Zh4grVQjdCyDJGyX8VAjFDdRWw2RC1eeFLoM6ufj09qVrUoPVe8ycYHc5pOHNMgG6HnWdJ8h8X9Vlc4YHgJkXwe/YQI1vWtG9lCXNsSX8yjkRUWM8lkpVWBsggM=
+::Zh4grVQjdCyDJGyX8VAjFDdRWw2RC1eVCLA4+uHt6qrK4mEcWuZ/S5rJzLGXM9w041HsYJQR5HtTlOwJAxZdagCyUi4hvWFPt3CAM4eooQ7iQQiu40Q9HnFmni3VlC5b
 ::YB416Ek+ZW8=
 ::
 ::
 ::978f952a14a936cc963da21a135fa983
+::[Bat To Exe Converter]
+::
+::fBE1pAF6MU+EWHreyHcjLQlHcCiHK2KpEYkz5u3f/eORpw1QFM4+doub6aGcNuUK+XnDfIIlw3hmqsoFADxdcR+ueh0tlUdMv3CMNsuVoArVWEmK7Ww1FGhxk3HJsz1rLoImidIPsw==
+::fBE1pAF6MU+EWHreyHcjLQlHcCiHK2KpEYkz5u3f/eORpw1QFM4+doub6aGcNuUK+XnDfIIlw3hmqsoFADxdcR+ueh0tlU1DumeQO8aItjvzS0uCwU4/FmBglXrvmnt1MZ17i89j
+::YAwzoRdxOk+EWAjk
+::fBw5plQjdCyDJGyX8VAjFDdRWw2RK1eVCLA4+uHt6qrK4mEcWuZ/S5rJzLGXM9w041HsYJQR5HtTlOwJAxZdagCyUhsmqG1JsWGKOsKIoRbeHGaf2UIzFGs6jmDf7A==
+::YAwzuBVtJxjWCl3EqQJgSA==
+::ZR4luwNxJguZRRnk
+::Yhs/ulQjdF+5
+::cxAkpRVqdFKZSzk=
+::cBs/ulQjdF65
+::ZR41oxFsdFKZSDk=
+::eBoioBt6dFKZSDk=
+::cRo6pxp7LAbNWATEpSI=
+::egkzugNsPRvcWATEpCI=
+::dAsiuh18IRvcCxnZtBJQ
+::cRYluBh/LU+EWAnk
+::YxY4rhs+aU+JeA==
+::cxY6rQJ7JhzQF1fEqQJQ
+::ZQ05rAF9IBncCkqN+0xwdVs0
+::ZQ05rAF9IAHYFVzEqQJQ
+::eg0/rx1wNQPfEVWB+kM9LVsJDGQ=
+::fBEirQZwNQPfEVWB+kM9LVsJDGQ=
+::cRolqwZ3JBvQF1fEqQJQ
+::dhA7uBVwLU+EWDk=
+::YQ03rBFzNR3SWATElA==
+::dhAmsQZ3MwfNWATElA==
+::ZQ0/vhVqMQ3MEVWAtB9wSA==
+::Zg8zqx1/OA3MEVWAtB9wSA==
+::dhA7pRFwIByZRRnk
+::Zh4grVQjdCyDJGyX8VAjFDdRWw2RK1eVCLA4+uHt6qrK4mEcWuZ/S5rJzLGXM9w041HsYJQR5HtTlOwJAxZdagCyUi4hvWFPt3CAM4eooQ7iQQiu40Q9HnFmni3VlC5b
+::YB416Ek+ZW8=
+::
+::
+::978f952a14a936cc963da21a135fa983
+
 @echo off
 
 SET Directory=%~dp0
@@ -45,7 +81,7 @@ SET Config_File=%Directory%ATG_Configure.ini
 @echo %date% %time% - Automated Track Geometry initiated.
 
 rem Check the licence for this software is valid.
-set Licence=30/10/2021
+set Licence=01/01/2030
 
 SETLOCAL EnableDelayedExpansion
 
@@ -96,7 +132,8 @@ if exist "%Config_File%" ( goto File_read ) else ( goto File_err_handler )
     IF %%a==::ShortTopChord SET ShortTopChord=%%b
     IF %%a==::LongTopChord SET LongTopChord=%%b
     IF %%a==::LeftRailIndicator SET LeftRailIndicator=%%b
-    IF %%a==::RightRailIndicator SET RightRailIndicator=%%b)
+    IF %%a==::RightRailIndicator SET RightRailIndicator=%%b
+    IF %%a==::ChainageNameFormat SET ChainageNameFormat=%%b)
 
     IF "%ServerName%" == "" (@echo - Warning: Server Name not set, will use default value.)>>%Log_File%
     IF "%DatabaseName%" == "" (@echo - Warning: Database Name not set, will use default value.)>>%Log_File%
@@ -116,6 +153,7 @@ if exist "%Config_File%" ( goto File_read ) else ( goto File_err_handler )
     IF "%LongTopChord%" == "" (@echo - Warning: Long Top Chord Length not set, will use default value.)>>%Log_File%
     IF "%LeftRailIndicator%" == "" (@echo - Warning: Left Rail Naming Indicator not set, will use default value.)>>%Log_File%
     IF "%RightRailIndicator%" == "" (@echo - Warning: Right Rail Naming Indicator not set, will use default value.)>>%Log_File%
+    IF "%ChainageNameFormat%" == "" (@echo - Warning: Chainage Name Format not set, will use default value.)>>%Log_File%
     @echo.>>%Log_File%
 
 rem Test the connection to the specified server
@@ -161,10 +199,9 @@ sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "%b2eincfile1%" -h -1 >>%Log_
 @echo %date% %time% - Running track geometry calculation script...>>%Log_File%
 @echo %date% %time% - Running track geometry calculation script.
 rem Run the automated track geometry script
-sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "%b2eincfile2%" -v CalculationFrequency="%CalculationFrequency%" DataExtractionWindow="%DataExtractionWindow%" OverdueDataWarning="%OverdueDataWarning%" SendOverdueEmail="%SendOverdueEmail%" PrismSpacingLimit="%PrismSpacingLimit%" ChainageStep="%ChainageStep%" ShortTwistStep="%ShortTwistStep%" LongTwistStep="%LongTwistStep%" ShortLineChord="%ShortLineChord%" LongLineChord="%LongLineChord%" ShortTopChord="%ShortTopChord%" LongTopChord="%LongTopChord%" LeftRailIndicator="%LeftRailIndicator%" RightRailIndicator="%RightRailIndicator%" EmailProfile="%EmailProfile%" EmailRecipients="%EmailRecipients%" -h -1 >>%Log_File%
+sqlcmd -S "%ServerName%" -E -d "%DatabaseName%" -i "%b2eincfile2%" -v CalculationFrequency="%CalculationFrequency%" DataExtractionWindow="%DataExtractionWindow%" OverdueDataWarning="%OverdueDataWarning%" SendOverdueEmail="%SendOverdueEmail%" PrismSpacingLimit="%PrismSpacingLimit%" ChainageStep="%ChainageStep%" ShortTwistStep="%ShortTwistStep%" LongTwistStep="%LongTwistStep%" ShortLineChord="%ShortLineChord%" LongLineChord="%LongLineChord%" ShortTopChord="%ShortTopChord%" LongTopChord="%LongTopChord%" LeftRailIndicator="%LeftRailIndicator%" RightRailIndicator="%RightRailIndicator%" EmailProfile="%EmailProfile%" EmailRecipients="%EmailRecipients%" ChainageNameFormat="%ChainageNameFormat%" -h -1 >>%Log_File%
 @echo.>>%Log_File%
 
 @echo %date% %time% - Automated Track Geometry completed.>>%Log_File%
 @echo %date% %time% - Automated Track Geometry completed.
 @echo =============================================================================================================================================================>>%Log_File%
-set /p Exit=Press ENTER to exit...
