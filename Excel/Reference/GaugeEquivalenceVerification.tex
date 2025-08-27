@@ -1,0 +1,265 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\geometry{margin=1in}
+
+\title{Rail Geometry Gauge Change Calculations - Equivalence Verification}
+\author{Rail Geometry Analysis}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Problem Statement}
+Given interpolated rail coordinates for left and right rails, verify that two computational approaches for calculating gauge parameter changes produce identical results:
+
+\textbf{Parameter-First Approach}: Calculate gauge parameters, then compute parameter changes\\
+\textbf{Delta-First Approach}: Calculate coordinate deltas, then compute parameter changes directly
+
+This verification demonstrates mathematical equivalence between both computational methods for gauge calculations.
+
+\section{Notation}
+\textbf{Variable Definitions:}
+\begin{itemize}
+\item $ch_c$ = Chainage location (distance along track centerline) where gauge is calculated
+\item $\tau_0$ = Baseline time (reference measurement)
+\item $\tau_m$ = Current measurement time (m = 1, 2, 3, ...)
+\item $\text{L}$ = Left rail (subscript)
+\item $\text{R}$ = Right rail (subscript)
+\item $X, Y, Z$ = 3D coordinates (X = Easting, Y = Northing, Z = Elevation)
+\item $\Delta$ = Change or difference operator
+\end{itemize}
+
+\textbf{Coordinate Notation:}
+\begin{itemize}
+\item $X(ch_c, \tau_m)_L$ = X-coordinate of left rail at chainage $ch_c$ and time $\tau_m$
+\item $Y(ch_c, \tau_m)_L$ = Y-coordinate of left rail at chainage $ch_c$ and time $\tau_m$
+\item $Z(ch_c, \tau_m)_L$ = Z-coordinate of left rail at chainage $ch_c$ and time $\tau_m$
+\item $\Delta X(ch_c, \tau_m)_L$ = Change in X-coordinate: $X(ch_c, \tau_m)_L - X(ch_c, \tau_0)_L$
+\end{itemize}
+
+\textbf{Parameter Notation:}
+\begin{itemize}
+\item $\text{Gauge}(ch_c, \tau_m)$ = Rail gauge at chainage $ch_c$ and time $\tau_m$
+\item $\Delta\text{Gauge}(ch_c, \tau_m)$ = Change in gauge from baseline to time $\tau_m$
+\end{itemize}
+
+\section{Input Dataset}
+Assume we have interpolated rail coordinates available at a specific chainage location:
+\begin{align}
+\text{Left Rail:} \quad &X(ch_c, \tau_0)_L, Y(ch_c, \tau_0)_L, Z(ch_c, \tau_0)_L \quad \text{(baseline)} \\
+&X(ch_c, \tau_m)_L, Y(ch_c, \tau_m)_L, Z(ch_c, \tau_m)_L \quad \text{(current)} \\[0.5em]
+\text{Right Rail:} \quad &X(ch_c, \tau_0)_R, Y(ch_c, \tau_0)_R, Z(ch_c, \tau_0)_R \quad \text{(baseline)} \\
+&X(ch_c, \tau_m)_R, Y(ch_c, \tau_m)_R, Z(ch_c, \tau_m)_R \quad \text{(current)}
+\end{align}
+
+\textbf{Example:} At chainage 1000m, we have baseline and current 3D coordinates for both left and right rails.
+
+\section{Parameter-First Approach}
+
+\subsection{Step 1: Calculate Baseline Gauge}
+For 3D gauge (true spatial distance):
+\begin{equation}
+\text{Gauge}(ch_c, \tau_0) = \sqrt{(X(ch_c, \tau_0)_L - X(ch_c, \tau_0)_R)^2 + (Y(ch_c, \tau_0)_L - Y(ch_c, \tau_0)_R)^2 + (Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R)^2}
+\end{equation}
+
+\subsection{Step 2: Calculate Current Gauge}
+\begin{equation}
+\text{Gauge}(ch_c, \tau_m) = \sqrt{(X(ch_c, \tau_m)_L - X(ch_c, \tau_m)_R)^2 + (Y(ch_c, \tau_m)_L - Y(ch_c, \tau_m)_R)^2 + (Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R)^2}
+\end{equation}
+
+\subsection{Step 3: Calculate Gauge Change}
+\begin{equation}
+\Delta\text{Gauge}(ch_c, \tau_m)_{\text{param}} = \text{Gauge}(ch_c, \tau_m) - \text{Gauge}(ch_c, \tau_0)
+\end{equation}
+
+Substituting the gauge definitions:
+\begin{align}
+\Delta\text{Gauge}(ch_c, \tau_m)_{\text{param}} &= \sqrt{(X(ch_c, \tau_m)_L - X(ch_c, \tau_m)_R)^2 + (Y(ch_c, \tau_m)_L - Y(ch_c, \tau_m)_R)^2 + (Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R)^2} \nonumber \\
+&\quad - \sqrt{(X(ch_c, \tau_0)_L - X(ch_c, \tau_0)_R)^2 + (Y(ch_c, \tau_0)_L - Y(ch_c, \tau_0)_R)^2 + (Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R)^2}
+\end{align}
+
+\section{Delta-First Approach}
+
+\subsection{Step 1: Calculate Coordinate Deltas}
+\begin{align}
+\Delta X(ch_c, \tau_m)_L &= X(ch_c, \tau_m)_L - X(ch_c, \tau_0)_L \\
+\Delta Y(ch_c, \tau_m)_L &= Y(ch_c, \tau_m)_L - Y(ch_c, \tau_0)_L \\
+\Delta Z(ch_c, \tau_m)_L &= Z(ch_c, \tau_m)_L - Z(ch_c, \tau_0)_L \\
+\Delta X(ch_c, \tau_m)_R &= X(ch_c, \tau_m)_R - X(ch_c, \tau_0)_R \\
+\Delta Y(ch_c, \tau_m)_R &= Y(ch_c, \tau_m)_R - Y(ch_c, \tau_0)_R \\
+\Delta Z(ch_c, \tau_m)_R &= Z(ch_c, \tau_m)_R - Z(ch_c, \tau_0)_R
+\end{align}
+
+\subsection{Step 2: Define Separation Vectors}
+Define baseline separation vector:
+\begin{equation}
+\vec{S}_0 = (X(ch_c, \tau_0)_L - X(ch_c, \tau_0)_R, Y(ch_c, \tau_0)_L - Y(ch_c, \tau_0)_R, Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R)
+\end{equation}
+
+Define delta separation vector:
+\begin{align}
+\vec{\Delta S} &= (\Delta X(ch_c, \tau_m)_L - \Delta X(ch_c, \tau_m)_R, \nonumber \\
+&\quad \Delta Y(ch_c, \tau_m)_L - \Delta Y(ch_c, \tau_m)_R, \nonumber \\
+&\quad \Delta Z(ch_c, \tau_m)_L - \Delta Z(ch_c, \tau_m)_R)
+\end{align}
+
+\subsection{Step 3: Calculate Gauge Change Using Vector Addition}
+\begin{equation}
+\Delta\text{Gauge}(ch_c, \tau_m)_{\text{delta}} = |\vec{S}_0 + \vec{\Delta S}| - |\vec{S}_0|
+\end{equation}
+
+\section{Equivalence Proof}
+
+\subsection{Expand Current Separation Vector}
+The current separation vector is:
+\begin{equation}
+\vec{S}_0 + \vec{\Delta S} = (X(ch_c, \tau_m)_L - X(ch_c, \tau_m)_R, Y(ch_c, \tau_m)_L - Y(ch_c, \tau_m)_R, Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R)
+\end{equation}
+
+\subsection{Expand Delta-First Method}
+Substituting vector definitions:
+\begin{align}
+\Delta\text{Gauge}(ch_c, \tau_m)_{\text{delta}} &= |\vec{S}_0 + \vec{\Delta S}| - |\vec{S}_0| \nonumber \\
+&= \sqrt{(X(ch_c, \tau_m)_L - X(ch_c, \tau_m)_R)^2 + (Y(ch_c, \tau_m)_L - Y(ch_c, \tau_m)_R)^2 + (Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R)^2} \nonumber \\
+&\quad - \sqrt{(X(ch_c, \tau_0)_L - X(ch_c, \tau_0)_R)^2 + (Y(ch_c, \tau_0)_L - Y(ch_c, \tau_0)_R)^2 + (Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R)^2}
+\end{align}
+
+\subsection{Final Comparison}
+Both methods yield identical expressions:
+\begin{align}
+\Delta\text{Gauge}(ch_c, \tau_m)_{\text{param}} &= \sqrt{(X(ch_c, \tau_m)_L - X(ch_c, \tau_m)_R)^2 + (Y(ch_c, \tau_m)_L - Y(ch_c, \tau_m)_R)^2 + (Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R)^2} \nonumber \\
+&\quad - \sqrt{(X(ch_c, \tau_0)_L - X(ch_c, \tau_0)_R)^2 + (Y(ch_c, \tau_0)_L - Y(ch_c, \tau_0)_R)^2 + (Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R)^2} \\
+\Delta\text{Gauge}(ch_c, \tau_m)_{\text{delta}} &= \sqrt{(X(ch_c, \tau_m)_L - X(ch_c, \tau_m)_R)^2 + (Y(ch_c, \tau_m)_L - Y(ch_c, \tau_m)_R)^2 + (Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R)^2} \nonumber \\
+&\quad - \sqrt{(X(ch_c, \tau_0)_L - X(ch_c, \tau_0)_R)^2 + (Y(ch_c, \tau_0)_L - Y(ch_c, \tau_0)_R)^2 + (Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R)^2}
+\end{align}
+
+\section{Worked Example}
+Consider a specific numerical example to demonstrate both computational methods.
+
+\subsection{Given Data}
+At chainage $ch_c = 1000$m:
+\begin{align}
+\text{Baseline (}\tau_0\text{):} \quad &X(1000, \tau_0)_L = 500.125\text{m}, \quad Y(1000, \tau_0)_L = 200.345\text{m}, \quad Z(1000, \tau_0)_L = 102.345\text{m} \nonumber \\
+&X(1000, \tau_0)_R = 498.590\text{m}, \quad Y(1000, \tau_0)_R = 200.355\text{m}, \quad Z(1000, \tau_0)_R = 102.330\text{m} \\[0.5em]
+\text{Current (}\tau_m\text{):} \quad &X(1000, \tau_m)_L = 500.120\text{m}, \quad Y(1000, \tau_m)_L = 200.350\text{m}, \quad Z(1000, \tau_m)_L = 102.358\text{m} \nonumber \\
+&X(1000, \tau_m)_R = 498.598\text{m}, \quad Y(1000, \tau_m)_R = 200.352\text{m}, \quad Z(1000, \tau_m)_R = 102.340\text{m}
+\end{align}
+
+\subsection{Parameter-First Calculation}
+\textbf{Step 1:} Calculate baseline gauge
+\begin{align}
+\text{Gauge}(1000, \tau_0) &= \sqrt{(500.125 - 498.590)^2 + (200.345 - 200.355)^2 + (102.345 - 102.330)^2} \nonumber \\
+&= \sqrt{(1.535)^2 + (-0.010)^2 + (0.015)^2} \nonumber \\
+&= \sqrt{2.356225 + 0.000100 + 0.000225} \nonumber \\
+&= \sqrt{2.356550} = 1.5351\text{m}
+\end{align}
+
+\textbf{Step 2:} Calculate current gauge
+\begin{align}
+\text{Gauge}(1000, \tau_m) &= \sqrt{(500.120 - 498.598)^2 + (200.350 - 200.352)^2 + (102.358 - 102.340)^2} \nonumber \\
+&= \sqrt{(1.522)^2 + (-0.002)^2 + (0.018)^2} \nonumber \\
+&= \sqrt{2.316484 + 0.000004 + 0.000324} \nonumber \\
+&= \sqrt{2.316812} = 1.5222\text{m}
+\end{align}
+
+\textbf{Step 3:} Calculate gauge change
+\begin{equation}
+\Delta\text{Gauge}(1000, \tau_m)_{\text{param}} = 1.5222 - 1.5351 = -0.0129\text{m}
+\end{equation}
+
+\subsection{Delta-First Calculation}
+\textbf{Step 1:} Calculate coordinate deltas
+\begin{align}
+\Delta X(1000, \tau_m)_L &= 500.120 - 500.125 = -0.005\text{m} \\
+\Delta Y(1000, \tau_m)_L &= 200.350 - 200.345 = 0.005\text{m} \\
+\Delta Z(1000, \tau_m)_L &= 102.358 - 102.345 = 0.013\text{m} \\
+\Delta X(1000, \tau_m)_R &= 498.598 - 498.590 = 0.008\text{m} \\
+\Delta Y(1000, \tau_m)_R &= 200.352 - 200.355 = -0.003\text{m} \\
+\Delta Z(1000, \tau_m)_R &= 102.340 - 102.330 = 0.010\text{m}
+\end{align}
+
+\textbf{Step 2:} Define separation vectors
+
+Baseline separation vector (left rail - right rail at baseline):
+\begin{align}
+\vec{S}_0 &= (X(1000, \tau_0)_L - X(1000, \tau_0)_R, Y(1000, \tau_0)_L - Y(1000, \tau_0)_R, Z(1000, \tau_0)_L - Z(1000, \tau_0)_R) \nonumber \\
+&= (500.125 - 498.590, 200.345 - 200.355, 102.345 - 102.330) \nonumber \\
+&= (1.535, -0.010, 0.015)
+\end{align}
+
+Delta separation vector (difference in coordinate deltas):
+\begin{align}
+\vec{\Delta S} &= (\Delta X(1000, \tau_m)_L - \Delta X(1000, \tau_m)_R, \Delta Y(1000, \tau_m)_L - \Delta Y(1000, \tau_m)_R, \Delta Z(1000, \tau_m)_L - \Delta Z(1000, \tau_m)_R) \nonumber \\
+&= ((-0.005) - (0.008), (0.005) - (-0.003), (0.013) - (0.010)) \nonumber \\
+&= (-0.013, 0.008, 0.003)
+\end{align}
+
+\textbf{Step 3:} Calculate gauge change using vector addition
+\begin{align}
+\vec{S}_0 + \vec{\Delta S} &= (1.535 - 0.013, -0.010 + 0.008, 0.015 + 0.003) = (1.522, -0.002, 0.018) \\
+|\vec{S}_0 + \vec{\Delta S}| &= \sqrt{(1.522)^2 + (-0.002)^2 + (0.018)^2} = 1.5222\text{m} \\
+\Delta\text{Gauge}(1000, \tau_m)_{\text{delta}} &= 1.5222 - 1.5351 = -0.0129\text{m}
+\end{align}
+
+\subsection{Verification}
+Both methods yield identical results:
+\begin{equation}
+\Delta\text{Gauge}(1000, \tau_m)_{\text{param}} = \Delta\text{Gauge}(1000, \tau_m)_{\text{delta}} = -0.0129\text{m}
+\end{equation}
+
+\section{Conclusion}
+\begin{equation}
+\boxed{\Delta\text{Gauge}(ch_c, \tau_m)_{\text{param}} = \Delta\text{Gauge}(ch_c, \tau_m)_{\text{delta}}}
+\end{equation}
+
+\textcolor{green}{\textbf{VERIFIED:}} Both approaches produce identical results for gauge change calculations.
+
+\textbf{Mathematical Basis:} The equivalence holds because the vector addition $\vec{S}_0 + \vec{\Delta S}$ produces the same current separation vector used in the parameter-first approach, ensuring identical distance calculations.
+
+\section{Implementation Notes}
+\begin{itemize}
+\item \textbf{Parameter-First}: More intuitive, provides intermediate gauge values for analysis
+\item \textbf{Delta-First}: More computationally efficient, reuses coordinate deltas across multiple parameters
+\item Both methods are mathematically equivalent and produce identical numerical results
+\item Gauge calculations involve 3D distance computations using all coordinate components
+\item The vector approach in delta-first method provides clear geometric interpretation
+\item Choice depends on computational efficiency needs and whether intermediate gauge values are required
+\end{itemize}
+
+\end{document}on
+\begin{align}
+\vec{S}_0 + \vec{\Delta S} &= (1.535, -0.010, 0.018) \\
+|\vec{S}_0 + \vec{\Delta S}| &= \sqrt{(1.535)^2 + (-0.010)^2 + (0.018)^2} = 1.535\text{m} \\
+\Delta\text{Gauge}(1000, \tau_m)_{\text{delta}} &= 1.535 - 1.535 = 0.000\text{m}
+\end{align}
+
+\subsection{Verification}
+Both methods yield identical results:
+\begin{equation}
+\Delta\text{Gauge}(1000, \tau_m)_{\text{param}} = \Delta\text{Gauge}(1000, \tau_m)_{\text{delta}} = 0.000\text{m}
+\end{equation}
+
+\section{Conclusion}
+\begin{equation}
+\boxed{\Delta\text{Gauge}(ch_c, \tau_m)_{\text{param}} = \Delta\text{Gauge}(ch_c, \tau_m)_{\text{delta}}}
+\end{equation}
+
+\textcolor{green}{\textbf{VERIFIED:}} Both approaches produce identical results for gauge change calculations.
+
+\textbf{Mathematical Basis:} The equivalence holds because the vector addition $\vec{S}_0 + \vec{\Delta S}$ produces the same current separation vector used in the parameter-first approach, ensuring identical distance calculations.
+
+\section{Implementation Notes}
+\begin{itemize}
+\item \textbf{Parameter-First}: More intuitive, provides intermediate gauge values for analysis
+\item \textbf{Delta-First}: More computationally efficient, reuses coordinate deltas across multiple parameters
+\item Both methods are mathematically equivalent and produce identical numerical results
+\item Gauge calculations involve 3D distance computations using all coordinate components
+\item The vector approach in delta-first method provides clear geometric interpretation
+\item Choice depends on computational efficiency needs and whether intermediate gauge values are required
+\end{itemize}
+
+\end{document}

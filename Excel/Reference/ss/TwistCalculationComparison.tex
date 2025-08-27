@@ -1,0 +1,175 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\geometry{margin=1in}
+
+% Custom commands for simplified notation
+\newcommand{\chainage}[1]{ch_{#1}}
+\newcommand{\time}[1]{\tau_{#1}}
+\newcommand{\Left}{\text{L}}
+\newcommand{\Right}{\text{R}}
+
+% Coordinate commands
+\newcommand{\Z}[3]{Z(#1, #2)_{#3}}
+
+% Delta commands
+\newcommand{\DZ}[3]{\Delta Z(#1, #2)_{#3}}
+
+% Cant and Twist commands
+\newcommand{\Cant}[2]{\text{Cant}(#1, #2)}
+\newcommand{\Twist}[3]{\text{Twist}(#1, #2, #3)}
+\newcommand{\DTwist}[3]{\Delta\text{Twist}(#1, #2, #3)}
+
+\title{Twist Change Calculation Methods - Equivalence Verification}
+\author{Rail Geometry Analysis}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Problem Statement}
+Given interpolated rail coordinates at chainages $\chainage{w}$ and $\chainage{w} + \Delta ch$ for left and right rails, verify that two methods for calculating twist change produce identical results:
+
+\textbf{Method A}: Calculate twist, then compute change in twist\\
+\textbf{Method B}: Calculate coordinate deltas, then compute twist change directly
+
+\section{Input Dataset}
+Assume we have interpolated rail coordinates at two chainages separated by interval $\Delta ch$:
+
+\textbf{At chainage} $\chainage{w}$:
+\begin{align}
+\text{Left Rail:} \quad &\Z{\chainage{w}}{\time{0}}{\Left}, \Z{\chainage{w}}{\time{m}}{\Left} \\
+\text{Right Rail:} \quad &\Z{\chainage{w}}{\time{0}}{\Right}, \Z{\chainage{w}}{\time{m}}{\Right}
+\end{align}
+
+\textbf{At chainage} $\chainage{w} + \Delta ch$:
+\begin{align}
+\text{Left Rail:} \quad &\Z{\chainage{w} + \Delta ch}{\time{0}}{\Left}, \Z{\chainage{w} + \Delta ch}{\time{m}}{\Left} \\
+\text{Right Rail:} \quad &\Z{\chainage{w} + \Delta ch}{\time{0}}{\Right}, \Z{\chainage{w} + \Delta ch}{\time{m}}{\Right}
+\end{align}
+
+\section{Method A: Twist-First Approach}
+
+\subsection{Step 1: Calculate Baseline Twist}
+First, calculate cant at both chainages for baseline:
+\begin{align}
+\Cant{\chainage{w}}{\time{0}} &= \Z{\chainage{w}}{\time{0}}{\Left} - \Z{\chainage{w}}{\time{0}}{\Right} \\
+\Cant{\chainage{w} + \Delta ch}{\time{0}} &= \Z{\chainage{w} + \Delta ch}{\time{0}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Right}
+\end{align}
+
+Then calculate baseline twist:
+\begin{equation}
+\Twist{\chainage{w}}{\Delta ch}{\time{0}} = \Cant{\chainage{w} + \Delta ch}{\time{0}} - \Cant{\chainage{w}}{\time{0}}
+\end{equation}
+
+\subsection{Step 2: Calculate Current Twist}
+Calculate cant at both chainages for current time:
+\begin{align}
+\Cant{\chainage{w}}{\time{m}} &= \Z{\chainage{w}}{\time{m}}{\Left} - \Z{\chainage{w}}{\time{m}}{\Right} \\
+\Cant{\chainage{w} + \Delta ch}{\time{m}} &= \Z{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{m}}{\Right}
+\end{align}
+
+Then calculate current twist:
+\begin{equation}
+\Twist{\chainage{w}}{\Delta ch}{\time{m}} = \Cant{\chainage{w} + \Delta ch}{\time{m}} - \Cant{\chainage{w}}{\time{m}}
+\end{equation}
+
+\subsection{Step 3: Calculate Twist Change}
+\begin{equation}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_A = \Twist{\chainage{w}}{\Delta ch}{\time{m}} - \Twist{\chainage{w}}{\Delta ch}{\time{0}}
+\end{equation}
+
+Substituting the twist definitions:
+\begin{align}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_A &= \left[\Cant{\chainage{w} + \Delta ch}{\time{m}} - \Cant{\chainage{w}}{\time{m}}\right] \\
+&\quad - \left[\Cant{\chainage{w} + \Delta ch}{\time{0}} - \Cant{\chainage{w}}{\time{0}}\right]
+\end{align}
+
+\section{Method B: Delta-First Approach}
+
+\subsection{Step 1: Calculate Z-Coordinate Deltas}
+\begin{align}
+\DZ{\chainage{w}}{\time{m}}{\Left} &= \Z{\chainage{w}}{\time{m}}{\Left} - \Z{\chainage{w}}{\time{0}}{\Left} \\
+\DZ{\chainage{w}}{\time{m}}{\Right} &= \Z{\chainage{w}}{\time{m}}{\Right} - \Z{\chainage{w}}{\time{0}}{\Right} \\
+\DZ{\chainage{w} + \Delta ch}{\time{m}}{\Left} &= \Z{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Left} \\
+\DZ{\chainage{w} + \Delta ch}{\time{m}}{\Right} &= \Z{\chainage{w} + \Delta ch}{\time{m}}{\Right} - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Right}
+\end{align}
+
+\subsection{Step 2: Calculate Cant Changes}
+\begin{align}
+\Delta\Cant(\chainage{w}, \time{m}) &= \DZ{\chainage{w}}{\time{m}}{\Left} - \DZ{\chainage{w}}{\time{m}}{\Right} \\
+\Delta\Cant(\chainage{w} + \Delta ch, \time{m}) &= \DZ{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \DZ{\chainage{w} + \Delta ch}{\time{m}}{\Right}
+\end{align}
+
+\subsection{Step 3: Calculate Twist Change Directly}
+\begin{equation}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_B = \Delta\Cant(\chainage{w} + \Delta ch, \time{m}) - \Delta\Cant(\chainage{w}, \time{m})
+\end{equation}
+
+\section{Equivalence Proof}
+
+\subsection{Expand Method A}
+Substitute cant definitions into Method A:
+\begin{align}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_A &= \left[\left(\Z{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{m}}{\Right}\right) - \left(\Z{\chainage{w}}{\time{m}}{\Left} - \Z{\chainage{w}}{\time{m}}{\Right}\right)\right] \\
+&\quad - \left[\left(\Z{\chainage{w} + \Delta ch}{\time{0}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Right}\right) - \left(\Z{\chainage{w}}{\time{0}}{\Left} - \Z{\chainage{w}}{\time{0}}{\Right}\right)\right]
+\end{align}
+
+Expanding:
+\begin{align}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_A &= \Z{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{m}}{\Right} - \Z{\chainage{w}}{\time{m}}{\Left} + \Z{\chainage{w}}{\time{m}}{\Right} \\
+&\quad - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Left} + \Z{\chainage{w} + \Delta ch}{\time{0}}{\Right} + \Z{\chainage{w}}{\time{0}}{\Left} - \Z{\chainage{w}}{\time{0}}{\Right}
+\end{align}
+
+\subsection{Expand Method B}
+Substitute delta definitions into Method B:
+\begin{align}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_B &= \left[\DZ{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \DZ{\chainage{w} + \Delta ch}{\time{m}}{\Right}\right] - \left[\DZ{\chainage{w}}{\time{m}}{\Left} - \DZ{\chainage{w}}{\time{m}}{\Right}\right]
+\end{align}
+
+Substituting delta definitions:
+\begin{align}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_B &= \left[\Z{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Left}\right] - \left[\Z{\chainage{w} + \Delta ch}{\time{m}}{\Right} - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Right}\right] \\
+&\quad - \left[\Z{\chainage{w}}{\time{m}}{\Left} - \Z{\chainage{w}}{\time{0}}{\Left}\right] + \left[\Z{\chainage{w}}{\time{m}}{\Right} - \Z{\chainage{w}}{\time{0}}{\Right}\right]
+\end{align}
+
+Expanding:
+\begin{align}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_B &= \Z{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{m}}{\Right} + \Z{\chainage{w} + \Delta ch}{\time{0}}{\Right} \\
+&\quad - \Z{\chainage{w}}{\time{m}}{\Left} + \Z{\chainage{w}}{\time{0}}{\Left} + \Z{\chainage{w}}{\time{m}}{\Right} - \Z{\chainage{w}}{\time{0}}{\Right}
+\end{align}
+
+\subsection{Rearranging Terms}
+Rearrange Method A:
+\begin{align}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_A &= \Z{\chainage{w} + \Delta ch}{\time{m}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{0}}{\Left} - \Z{\chainage{w} + \Delta ch}{\time{m}}{\Right} + \Z{\chainage{w} + \Delta ch}{\time{0}}{\Right} \\
+&\quad - \Z{\chainage{w}}{\time{m}}{\Left} + \Z{\chainage{w}}{\time{0}}{\Left} + \Z{\chainage{w}}{\time{m}}{\Right} - \Z{\chainage{w}}{\time{0}}{\Right}
+\end{align}
+
+Compare with Method B - they are identical!
+
+\subsection{Conclusion}
+\begin{equation}
+\boxed{\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_A = \DTwist{\chainage{w}}{\Delta ch}{\time{m}}_B}
+\end{equation}
+
+\textcolor{green}{\textbf{VERIFIED:}} Both methods produce identical results.
+
+\section{General Formula}
+The equivalent expressions can be written as:
+\begin{equation}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}} = \left[\Delta\Cant(\chainage{w} + \Delta ch, \time{m}) - \Delta\Cant(\chainage{w}, \time{m})\right] = \left[\Twist{\chainage{w}}{\Delta ch}{\time{m}} - \Twist{\chainage{w}}{\Delta ch}{\time{0}}\right]
+\end{equation}
+
+\section{Implementation Notes}
+\begin{itemize}
+\item \textbf{Method A} follows the conceptual definition: calculate twist parameter, then find change
+\item \textbf{Method B} is more direct: work with coordinate differences to compute twist change
+\item Both methods are mathematically equivalent due to linearity of cant and twist calculations
+\item Method B may be computationally more efficient as it avoids intermediate cant calculations
+\end{itemize}
+
+\end{document}

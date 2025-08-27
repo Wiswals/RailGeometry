@@ -1,0 +1,179 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\geometry{margin=1in}
+
+% Custom commands for simplified notation
+\newcommand{\chainage}[1]{ch_{#1}}
+\newcommand{\time}[1]{\tau_{#1}}
+\newcommand{\Left}{\text{L}}
+\newcommand{\Right}{\text{R}}
+
+% Coordinate commands
+\newcommand{\X}[3]{X(#1, #2)_{#3}}
+\newcommand{\Y}[3]{Y(#1, #2)_{#3}}
+\newcommand{\Z}[3]{Z(#1, #2)_{#3}}
+
+% Delta commands
+\newcommand{\DX}[3]{\Delta X(#1, #2)_{#3}}
+\newcommand{\DY}[3]{\Delta Y(#1, #2)_{#3}}
+\newcommand{\DZ}[3]{\Delta Z(#1, #2)_{#3}}
+
+% Cant commands
+\newcommand{\Cant}[2]{\text{Cant}(#1, #2)}
+\newcommand{\DCant}[2]{\Delta\text{Cant}(#1, #2)}
+
+\title{Cant Change Calculation Methods - Equivalence Verification}
+\author{Rail Geometry Analysis}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Problem Statement}
+Given interpolated rail coordinates at chainage $\chainage{c}$ for left and right rails, verify that two methods for calculating cant change produce identical results:
+
+\textbf{Method A}: Calculate cant, then compute change in cant\\
+\textbf{Method B}: Calculate coordinate deltas, then compute cant change directly
+
+\section{Input Dataset}
+Assume we have interpolated rail coordinates available:
+\begin{align}
+\text{Left Rail:} \quad &\X{\chainage{c}}{\time{0}}{\Left}, \Y{\chainage{c}}{\time{0}}{\Left}, \Z{\chainage{c}}{\time{0}}{\Left} \quad \text{(baseline)} \\
+&\X{\chainage{c}}{\time{m}}{\Left}, \Y{\chainage{c}}{\time{m}}{\Left}, \Z{\chainage{c}}{\time{m}}{\Left} \quad \text{(current)} \\[0.5em]
+\text{Right Rail:} \quad &\X{\chainage{c}}{\time{0}}{\Right}, \Y{\chainage{c}}{\time{0}}{\Right}, \Z{\chainage{c}}{\time{0}}{\Right} \quad \text{(baseline)} \\
+&\X{\chainage{c}}{\time{m}}{\Right}, \Y{\chainage{c}}{\time{m}}{\Right}, \Z{\chainage{c}}{\time{m}}{\Right} \quad \text{(current)}
+\end{align}
+
+\section{Method A: Cant-First Approach}
+
+\subsection{Step 1: Calculate Baseline Cant}
+\begin{equation}
+\Cant{\chainage{c}}{\time{0}} = \Z{\chainage{c}}{\time{0}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Right}
+\end{equation}
+
+\subsection{Step 2: Calculate Current Cant}
+\begin{equation}
+\Cant{\chainage{c}}{\time{m}} = \Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{m}}{\Right}
+\end{equation}
+
+\subsection{Step 3: Calculate Cant Change}
+\begin{equation}
+\DCant{\chainage{c}}{\time{m}}_A = \Cant{\chainage{c}}{\time{m}} - \Cant{\chainage{c}}{\time{0}}
+\end{equation}
+
+Substituting the cant definitions:
+\begin{equation}
+\DCant{\chainage{c}}{\time{m}}_A = \left[\Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{m}}{\Right}\right] - \left[\Z{\chainage{c}}{\time{0}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Right}\right]
+\end{equation}
+
+\section{Method B: Delta-First Approach}
+
+\subsection{Step 1: Calculate Z-Coordinate Deltas}
+\begin{align}
+\DZ{\chainage{c}}{\time{m}}{\Left} &= \Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Left} \\
+\DZ{\chainage{c}}{\time{m}}{\Right} &= \Z{\chainage{c}}{\time{m}}{\Right} - \Z{\chainage{c}}{\time{0}}{\Right}
+\end{align}
+
+\subsection{Step 2: Calculate Cant Change Directly}
+\begin{equation}
+\DCant{\chainage{c}}{\time{m}}_B = \DZ{\chainage{c}}{\time{m}}{\Left} - \DZ{\chainage{c}}{\time{m}}{\Right}
+\end{equation}
+
+Substituting the delta definitions:
+\begin{equation}
+\DCant{\chainage{c}}{\time{m}}_B = \left[\Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Left}\right] - \left[\Z{\chainage{c}}{\time{m}}{\Right} - \Z{\chainage{c}}{\time{0}}{\Right}\right]
+\end{equation}
+
+\section{Equivalence Proof}
+
+\subsection{Algebraic Expansion}
+Expand Method A result:
+\begin{align}
+\DCant{\chainage{c}}{\time{m}}_A &= \left[\Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{m}}{\Right}\right] - \left[\Z{\chainage{c}}{\time{0}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Right}\right] \\
+&= \Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{m}}{\Right} - \Z{\chainage{c}}{\time{0}}{\Left} + \Z{\chainage{c}}{\time{0}}{\Right}
+\end{align}
+
+Expand Method B result:
+\begin{align}
+\DCant{\chainage{c}}{\time{m}}_B &= \left[\Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Left}\right] - \left[\Z{\chainage{c}}{\time{m}}{\Right} - \Z{\chainage{c}}{\time{0}}{\Right}\right] \\
+&= \Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Left} - \Z{\chainage{c}}{\time{m}}{\Right} + \Z{\chainage{c}}{\time{0}}{\Right}
+\end{align}
+
+\subsection{Rearranging Terms}
+Rearrange Method A:
+\begin{equation}
+\DCant{\chainage{c}}{\time{m}}_A = \Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Left} - \Z{\chainage{c}}{\time{m}}{\Right} + \Z{\chainage{c}}{\time{0}}{\Right}
+\end{equation}
+
+Compare with Method B:
+\begin{equation}
+\DCant{\chainage{c}}{\time{m}}_B = \Z{\chainage{c}}{\time{m}}{\Left} - \Z{\chainage{c}}{\time{0}}{\Left} - \Z{\chainage{c}}{\time{m}}{\Right} + \Z{\chainage{c}}{\time{0}}{\Right}
+\end{equation}
+
+\subsection{Conclusion}
+\begin{equation}
+\boxed{\DCant{\chainage{c}}{\time{m}}_A = \DCant{\chainage{c}}{\time{m}}_B}
+\end{equation}
+
+\textcolor{green}{\textbf{VERIFIED:}} Both methods produce identical results.
+
+\section{General Formula}
+The equivalent expressions can be written as:
+\begin{equation}
+\DCant{\chainage{c}}{\time{m}} = \left[\DZ{\chainage{c}}{\time{m}}{\Left} - \DZ{\chainage{c}}{\time{m}}{\Right}\right] = \left[\Cant{\chainage{c}}{\time{m}} - \Cant{\chainage{c}}{\time{0}}\right]
+\end{equation}
+
+\section{Implementation Notes}
+\begin{itemize}
+\item \textbf{Method A} is conceptually clearer: calculate geometry parameter, then find change
+\item \textbf{Method B} is computationally efficient: work directly with coordinate differences
+\item Both methods are mathematically equivalent due to linearity of the cant calculation
+\item Choose based on implementation preference or computational efficiency requirements
+\end{itemize}
+
+\section{Extension to Twist Calculations}
+Since twist is the difference in cant over a distance interval, the same equivalence principle applies.
+
+\subsection{Twist Definition}
+For chainages $\chainage{w}$ and $\chainage{w} + \Delta ch$:
+\begin{equation}
+\Twist(\chainage{w}, \Delta ch, \time{m}) = \Cant(\chainage{w} + \Delta ch, \time{m}) - \Cant(\chainage{w}, \time{m})
+\end{equation}
+
+\subsection{Twist Change Methods}
+\textbf{Method A (Twist-First):}
+\begin{equation}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_A = \Twist(\chainage{w}, \Delta ch, \time{m}) - \Twist(\chainage{w}, \Delta ch, \time{0})
+\end{equation}
+
+\textbf{Method B (Delta-First):}
+\begin{equation}
+\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_B = [\Delta\Cant(\chainage{w} + \Delta ch, \time{m}) - \Delta\Cant(\chainage{w}, \time{m})]
+\end{equation}
+
+where $\Delta\Cant$ values are calculated using the cant change methods above.
+
+\subsection{Twist Equivalence}
+Since twist is a linear combination of cant values, and cant change calculations are equivalent:
+\begin{equation}
+\boxed{\DTwist{\chainage{w}}{\Delta ch}{\time{m}}_A = \DTwist{\chainage{w}}{\Delta ch}{\time{m}}_B}
+\end{equation}
+
+\textcolor{green}{\textbf{VERIFIED:}} Twist change methods are equivalent by transitivity of the cant equivalence.
+
+\subsection{Computational Efficiency}
+\textbf{Method B for Twist} is particularly efficient as it:
+\begin{itemize}
+\item Reuses the $\Delta Z$ calculations from cant analysis
+\item Avoids computing intermediate cant and twist values
+\item Directly computes twist change from coordinate deltas
+\end{itemize}
+
+\section{Summary}
+Both cant and twist change calculations demonstrate mathematical equivalence between parameter-first and delta-first approaches. The choice depends on computational efficiency needs and conceptual clarity preferences.
+
+\end{document}

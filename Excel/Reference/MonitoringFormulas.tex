@@ -1,0 +1,320 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{Monitoring Point Movement Analysis - Mathematical Formulas}
+\author{Rail Geometry Analysis}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Concept Overview}
+Monitor rail geometry using prisms $(P_1, P_2, P_3, P_4, \ldots)$ mounted on rails. Track 3D movement over time using timestamped measurements $(\tau_1, \tau_2, \tau_3, \tau_4, \tau_5, \ldots)$ compared to established baseline positions. Prism movement represents rail movement, enabling calculation of rail geometry parameters.
+
+\section{Data Structure}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+\hline
+PrismID & Timestamp & X & Y & Z & Chainage & Rail Side & $\Delta X_{off}$ & $\Delta Y_{off}$ & $\Delta Z_{off}$ \\
+\hline
+$P_1$ & $\tau_0$ & $x_{1,0}$ & $y_{1,0}$ & $z_{1,0}$ & $ch_1$ & L & $dx_1$ & $dy_1$ & $dz_1$ \\
+$P_1$ & $\tau_1$ & $x_{1,1}$ & $y_{1,1}$ & $z_{1,1}$ & $ch_1$ & L & $dx_1$ & $dy_1$ & $dz_1$ \\
+$P_1$ & $\tau_2$ & $x_{1,2}$ & $y_{1,2}$ & $z_{1,2}$ & $ch_1$ & L & $dx_1$ & $dy_1$ & $dz_1$ \\
+$P_1$ & $\tau_3$ & $x_{1,3}$ & $y_{1,3}$ & $z_{1,3}$ & $ch_1$ & L & $dx_1$ & $dy_1$ & $dz_1$ \\
+$P_2$ & $\tau_0$ & $x_{2,0}$ & $y_{2,0}$ & $z_{2,0}$ & $ch_2$ & R & $dx_2$ & $dy_2$ & $dz_2$ \\
+$P_2$ & $\tau_1$ & $x_{2,1}$ & $y_{2,1}$ & $z_{2,1}$ & $ch_2$ & R & $dx_2$ & $dy_2$ & $dz_2$ \\
+$P_2$ & $\tau_2$ & $x_{2,2}$ & $y_{2,2}$ & $z_{2,2}$ & $ch_2$ & R & $dx_2$ & $dy_2$ & $dz_2$ \\
+$P_2$ & $\tau_3$ & $x_{2,3}$ & $y_{2,3}$ & $z_{2,3}$ & $ch_2$ & R & $dx_2$ & $dy_2$ & $dz_2$ \\
+$P_3$ & $\tau_0$ & $x_{3,0}$ & $y_{3,0}$ & $z_{3,0}$ & $ch_3$ & L & $dx_3$ & $dy_3$ & $dz_3$ \\
+$P_3$ & $\tau_1$ & $x_{3,1}$ & $y_{3,1}$ & $z_{3,1}$ & $ch_3$ & L & $dx_3$ & $dy_3$ & $dz_3$ \\
+$P_4$ & $\tau_0$ & $x_{4,0}$ & $y_{4,0}$ & $z_{4,0}$ & $ch_4$ & R & $dx_4$ & $dy_4$ & $dz_4$ \\
+$P_4$ & $\tau_1$ & $x_{4,1}$ & $y_{4,1}$ & $z_{4,1}$ & $ch_4$ & R & $dx_4$ & $dy_4$ & $dz_4$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Variable Definitions:}
+\begin{itemize}
+\item $P_p$ = Prism identifier (p = 1, 2, 3, ...)
+\item $\tau_m$ = Timestamp for measurement m (m = 0, 1, 2, ...)
+\item $x_{p,m}, y_{p,m}, z_{p,m}$ = Measured prism coordinates
+\item $ch_p$ = Chainage location of prism p
+\item L/R = Left or Right rail side
+\item $\Delta X_{off}, \Delta Y_{off}, \Delta Z_{off}$ = Prism-to-rail offset corrections
+\end{itemize}
+
+\section{Baseline Definition}
+The baseline position $(X_0, Y_0, Z_0)$ for each monitoring point can be established using:
+\begin{itemize}
+\item \textbf{Single Reading}: First measurement becomes baseline
+\item \textbf{Average of Multiple Readings}: Mean of initial measurements for stability
+\item \textbf{Designated Reference}: Assigned coordinates from survey or design
+\end{itemize}
+
+\section{Mathematical Formulas}
+
+\subsection{Baseline Establishment}
+For each prism $P_p$ at chainage $ch_p$, the baseline coordinates are:
+\begin{align}
+X_0(P_p) &= X(P_p, \tau_0) \\
+Y_0(P_p) &= Y(P_p, \tau_0) \\
+Z_0(P_p) &= Z(P_p, \tau_0)
+\end{align}
+where $\tau_0$ represents the baseline time (or derived baseline position).
+
+\subsection{Delta Calculations}
+For any measurement of prism $P_p$ at time $\tau_m$ (where $m > 0$):
+\begin{align}
+\Delta X(P_p, \tau_m) &= X(P_p, \tau_m) - X_0(P_p) \\
+\Delta Y(P_p, \tau_m) &= Y(P_p, \tau_m) - Y_0(P_p) \\
+\Delta Z(P_p, \tau_m) &= Z(P_p, \tau_m) - Z_0(P_p)
+\end{align}
+\textbf{Note:} Prism-to-rail offsets are irrelevant for delta calculations as they cancel out when applied to both baseline and current measurements.
+
+\section{Rail Geometry Processing}
+\textbf{Processing Workflow:} Transform prism coordinates to rail coordinates, then interpolate to regular grid for geometry calculations.
+
+\subsection{Prism to Rail Edge Transformation}
+Apply offset corrections to transform prism coordinates to rail running edge:
+\begin{align}
+X_{rail}(P_p, \tau_m) &= X_{prism}(P_p, \tau_m) + \Delta X_{off}(P_p) \\
+Y_{rail}(P_p, \tau_m) &= Y_{prism}(P_p, \tau_m) + \Delta Y_{off}(P_p) \\
+Z_{rail}(P_p, \tau_m) &= Z_{prism}(P_p, \tau_m) + \Delta Z_{off}(P_p)
+\end{align}
+where $P_p$ represents prism $p$ at chainage $ch_p$ and $\tau_m$ is measurement time.
+
+\subsection{Rail Alignment Interpolation}
+From irregularly spaced prism positions, interpolate to evenly distributed chainage intervals. Two approaches available:
+
+\textbf{Method 1: Chainage-based Linear Interpolation (Recommended)}
+Interpolate each coordinate independently based on chainage distance.
+
+\textbf{Method 2: 3D Parametric Interpolation}
+Interpolate along the 3D spatial line between bounding points.
+
+\subsubsection{Bounding Point Selection}
+For each target chainage $ch_{target}$, find bounding measured points from the set of prism chainages $\{ch_1, ch_2, \ldots, ch_n\}$:
+\begin{align}
+ch_{last} &= \max\{ch_p : ch_p \leq ch_{target}\} \\
+ch_{next} &= \min\{ch_p : ch_p \geq ch_{target}\}
+\end{align}
+
+\subsubsection{Interpolation Distance}
+Calculate the chainage distance from the last point to the interpolation point:
+\begin{equation}
+d_{intp} = ch_{target} - ch_{last}
+\end{equation}
+
+\subsubsection{Supporting Geometric Calculations}
+For 3D interpolation between points $(X_{last}, Y_{last}, Z_{last})$ and $(X_{next}, Y_{next}, Z_{next})$:
+
+\textbf{Horizontal Bearing:}
+\begin{align}
+\beta &= \arctan2(X_{next} - X_{last}, Y_{next} - Y_{last}) \times \frac{180}{\pi} \\
+\beta_{adj} &= (\beta + 360) \bmod 360
+\end{align}
+
+\textbf{Horizontal Distance:}
+\begin{equation}
+D_{hz} = \sqrt{(X_{next} - X_{last})^2 + (Y_{next} - Y_{last})^2}
+\end{equation}
+
+\textbf{Vertical Angle:}
+\begin{equation}
+\alpha = \arctan2(Z_{next} - Z_{last}, D_{hz}) \times \frac{180}{\pi}
+\end{equation}
+
+\textbf{3D Slope Distance:}
+\begin{equation}
+D_{slope} = \sqrt{(X_{next} - X_{last})^2 + (Y_{next} - Y_{last})^2 + (Z_{next} - Z_{last})^2}
+\end{equation}
+
+\subsubsection{Method 1: Chainage-based Linear Interpolation}
+\textbf{Interpolation Ratio:}
+\begin{equation}
+r = \frac{ch_{target} - ch_{last}}{ch_{next} - ch_{last}}
+\end{equation}
+
+\textbf{Interpolated Coordinates:}
+\begin{align}
+X_{intp}(ch_{target}, \tau_m) &= X_{last} + r \times (X_{next} - X_{last}) \\
+Y_{intp}(ch_{target}, \tau_m) &= Y_{last} + r \times (Y_{next} - Y_{last}) \\
+Z_{intp}(ch_{target}, \tau_m) &= Z_{last} + r \times (Z_{next} - Z_{last})
+\end{align}
+
+\subsubsection{Method 2: 3D Parametric Interpolation}
+\textbf{Slope Distance to Interpolation Point:}
+\begin{equation}
+D_{slope,intp} = r \times D_{slope}
+\end{equation}
+
+\textbf{Horizontal Distance Component:}
+\begin{equation}
+D_{hz,intp} = D_{slope,intp} \times \cos(\alpha \times \frac{\pi}{180})
+\end{equation}
+
+\textbf{Interpolated Coordinates:}
+\begin{align}
+X_{intp}(ch_{target}, \tau_m) &= X_{last} + \sin(\beta_{adj} \times \frac{\pi}{180}) \times D_{hz,intp} \\
+Y_{intp}(ch_{target}, \tau_m) &= Y_{last} + \cos(\beta_{adj} \times \frac{\pi}{180}) \times D_{hz,intp} \\
+Z_{intp}(ch_{target}, \tau_m) &= Z_{last} + \sin(\alpha \times \frac{\pi}{180}) \times D_{slope,intp}
+\end{align}
+
+\textbf{Note:} Method 1 is simpler and maintains chainage proportionality. Method 2 follows true 3D geometry but may not preserve equal chainage spacing.
+
+where coordinates are from the transformed rail edge positions for the specified rail side (L or R).
+
+\subsubsection{Regular Chainage Grid}
+Generate evenly spaced target chainages:
+\begin{equation}
+ch_{target}(g) = ch_{start} + g \cdot \Delta ch \quad \text{where } g = 0, 1, 2, \ldots, n
+\end{equation}
+
+\subsubsection{Interpolated Coordinate Set}
+The interpolation process produces a regularized coordinate dataset:
+\begin{itemize}
+\item \textbf{Input}: Irregular prism positions at chainages $\{ch_1, ch_3, ch_7, ch_{12}, \ldots\}$
+\item \textbf{Output}: Regular rail coordinates at uniform intervals $\{ch_0, ch_1, ch_2, ch_3, \ldots\}$
+\item \textbf{Result}: Evenly spaced 3D coordinates $(X_{intp}, Y_{intp}, Z_{intp})$ for both left and right rails
+\item \textbf{Benefit}: Enables consistent geometric calculations across the entire alignment
+\end{itemize}
+
+\textbf{Example Interpolated Dataset:}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Chainage & Rail Side & $X_{intp}$ & $Y_{intp}$ & $Z_{intp}$ & Timestamp \\
+\hline
+$ch_0$ & L & $X_{intp}(ch_0, \tau_m)_L$ & $Y_{intp}(ch_0, \tau_m)_L$ & $Z_{intp}(ch_0, \tau_m)_L$ & $\tau_m$ \\
+$ch_0$ & R & $X_{intp}(ch_0, \tau_m)_R$ & $Y_{intp}(ch_0, \tau_m)_R$ & $Z_{intp}(ch_0, \tau_m)_R$ & $\tau_m$ \\
+$ch_1$ & L & $X_{intp}(ch_1, \tau_m)_L$ & $Y_{intp}(ch_1, \tau_m)_L$ & $Z_{intp}(ch_1, \tau_m)_L$ & $\tau_m$ \\
+$ch_1$ & R & $X_{intp}(ch_1, \tau_m)_R$ & $Y_{intp}(ch_1, \tau_m)_R$ & $Z_{intp}(ch_1, \tau_m)_R$ & $\tau_m$ \\
+$\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ \\
+\hline
+\end{tabular}
+\end{center}
+\textbf{Note:} Subscripts L and R denote left and right rail sides respectively.
+
+\subsection{Rail Geometry Parameters}
+From interpolated rail alignment, calculate key rail geometry measurements:
+
+\subsubsection{Cant and Gauge}
+For corresponding left and right rail points at chainage $ch_c$:
+
+\textbf{Cant (Cross-level):}
+\begin{equation}
+\text{Cant}(ch_c, \tau_m) = Z_{intp}(ch_c, \tau_m)_L - Z_{intp}(ch_c, \tau_m)_R
+\end{equation}
+where positive values indicate left rail higher than right rail.
+
+\textbf{Gauge:}
+\begin{equation}
+\text{Gauge}(ch_c, \tau_m) = \sqrt{(X_{intp}(ch_c, \tau_m)_L - X_{intp}(ch_c, \tau_m)_R)^2 + (Y_{intp}(ch_c, \tau_m)_L - Y_{intp}(ch_c, \tau_m)_R)^2 + (Z_{intp}(ch_c, \tau_m)_L - Z_{intp}(ch_c, \tau_m)_R)^2}
+\end{equation}
+
+\textbf{Alternative 2D Gauge (Traditional):}
+\begin{equation}
+\text{Gauge}_{2D}(ch_c, \tau_m) = \sqrt{(X_{intp}(ch_c, \tau_m)_L - X_{intp}(ch_c, \tau_m)_R)^2 + (Y_{intp}(ch_c, \tau_m)_L - Y_{intp}(ch_c, \tau_m)_R)^2}
+\end{equation}
+
+\textbf{Note:} The 3D gauge represents true spatial separation between rail points, while the 2D gauge follows traditional horizontal measurement practice. Choose based on monitoring requirements.
+
+where subscripts L and R denote left and right rail interpolated coordinates at chainage $ch_c$.
+
+\subsubsection{Twist}
+Rate of cant change over distance, typically measured over standard intervals:
+\begin{equation}
+\text{Twist}(ch_w, \Delta ch) = \text{Cant}(ch_w + \Delta ch, \tau_m) - \text{Cant}(ch_w, \tau_m)
+\end{equation}
+where $\Delta ch$ is the measurement interval (commonly 3m, 6m, or 10m).
+
+\textbf{Twist Rate per Unit Distance:}
+\begin{equation}
+\text{Twist Rate}(ch_w) = \frac{\text{Twist}(ch_w, \Delta ch)}{\Delta ch}
+\end{equation}
+
+\subsubsection{Versines}
+Measure track deviation from straight line over chord lengths using three-point geometry.
+
+\textbf{Horizontal Versine:}
+For three points forming a chord at chainages $ch_{v-s}$, $ch_v$, $ch_{v+s}$ using horizontal coordinates only:
+
+\textbf{Perpendicular Offset from Chord:}
+\begin{equation}
+\text{Offset}_{hz}(ch_v) = \frac{|(Y_{v+s} - Y_{v-s}) \cdot X_v - (X_{v+s} - X_{v-s}) \cdot Y_v + X_{v+s} \cdot Y_{v-s} - X_{v-s} \cdot Y_{v+s}|}{\sqrt{(X_{v+s} - X_{v-s})^2 + (Y_{v+s} - Y_{v-s})^2}}
+\end{equation}
+
+\textbf{Signed Horizontal Versine:}
+\begin{equation}
+\text{Versine}_{hz}(ch_v) = \text{Offset}_{hz}(ch_v) \times \text{sign}
+\end{equation}
+where sign is determined by cross product: positive for left curves, negative for right curves.
+
+\textbf{Vertical Versine:}
+Using chainage-based linear interpolation for vertical profile analysis:
+
+\textbf{Expected Z at midpoint:}
+\begin{equation}
+Z_{expected} = Z_{v-s} + \frac{ch_v - ch_{v-s}}{ch_{v+s} - ch_{v-s}} \cdot (Z_{v+s} - Z_{v-s})
+\end{equation}
+
+\textbf{Vertical Versine:}
+\begin{equation}
+\text{Versine}_{vt}(ch_v) = Z_v - Z_{expected}
+\end{equation}
+where positive values indicate elevation above the straight line between end points.
+
+\section{Track Parameter Change Analysis}
+Similar to coordinate displacement analysis, track geometry parameters can be monitored for changes over time by comparing current measurements to baseline values.
+
+\subsection{Parameter Change Calculations}
+For any geometry parameter $P$ at chainage $ch$ and time $\tau_m$:
+
+\textbf{Baseline Parameter Values:}
+\begin{align}
+\text{Cant}_0(ch) &= \text{Cant}(ch, \tau_0) \\
+\text{Gauge}_0(ch) &= \text{Gauge}(ch, \tau_0) \\
+\text{Twist}_0(ch) &= \text{Twist}(ch, \tau_0) \\
+\text{Versine}_{hz,0}(ch) &= \text{Versine}_{hz}(ch, \tau_0) \\
+\text{Versine}_{vt,0}(ch) &= \text{Versine}_{vt}(ch, \tau_0)
+\end{align}
+
+\textbf{Parameter Changes:}
+\begin{align}
+\Delta\text{Cant}(ch, \tau_m) &= \text{Cant}(ch, \tau_m) - \text{Cant}_0(ch) \\
+\Delta\text{Gauge}(ch, \tau_m) &= \text{Gauge}(ch, \tau_m) - \text{Gauge}_0(ch) \\
+\Delta\text{Twist}(ch, \tau_m) &= \text{Twist}(ch, \tau_m) - \text{Twist}_0(ch) \\
+\Delta\text{Versine}_{hz}(ch, \tau_m) &= \text{Versine}_{hz}(ch, \tau_m) - \text{Versine}_{hz,0}(ch) \\
+\Delta\text{Versine}_{vt}(ch, \tau_m) &= \text{Versine}_{vt}(ch, \tau_m) - \text{Versine}_{vt,0}(ch)
+\end{align}
+
+\subsection{Change Analysis Applications}
+\textbf{Monitoring Applications:}
+\begin{itemize}
+\item \textbf{Cant Changes}: Track settlement, ballast consolidation, thermal effects
+\item \textbf{Gauge Changes}: Rail spreading, fastener loosening, thermal expansion
+\item \textbf{Twist Changes}: Differential settlement, subgrade issues
+\item \textbf{Versine Changes}: Alignment shifts, curve geometry degradation
+\end{itemize}
+
+\textbf{Threshold Analysis:}
+\begin{equation}
+\text{Alert}(ch, \tau_m) = \begin{cases}
+\text{True} & \text{if } |\Delta P(ch, \tau_m)| > \text{Threshold}_P \\
+\text{False} & \text{otherwise}
+\end{cases}
+\end{equation}
+where $P$ represents any geometry parameter and $\text{Threshold}_P$ is the acceptable change limit.
+
+\textbf{Rate of Change:}
+\begin{equation}
+\text{Rate}_P(ch, \tau_m) = \frac{\Delta P(ch, \tau_m)}{\tau_m - \tau_0}
+\end{equation}
+Provides parameter change velocity for trend analysis and predictive maintenance.
+
+\section{Summary}
+This document provides the complete mathematical framework for monitoring rail geometry using prism-based measurements. The workflow transforms irregular prism observations into regular rail geometry parameters through coordinate transformation, 3D interpolation, and geometric calculations. Key outputs include cant, gauge, twist, and versine measurements, plus their changes over time, that characterize rail alignment quality and degradation patterns for maintenance planning.
+
+\end{document}

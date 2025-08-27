@@ -1,0 +1,202 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\geometry{margin=1in}
+
+\title{Rail Geometry Cant Change Calculations - Equivalence Verification}
+\author{Rail Geometry Analysis}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Problem Statement}
+Given interpolated rail coordinates for left and right rails, verify that two computational approaches for calculating cant parameter changes produce identical results:
+
+\textbf{Parameter-First Approach}: Calculate cant parameters, then compute parameter changes\\
+\textbf{Delta-First Approach}: Calculate coordinate deltas, then compute parameter changes directly
+
+This verification demonstrates mathematical equivalence between both computational methods for cant calculations.
+
+\section{Notation}
+\textbf{Variable Definitions:}
+\begin{itemize}
+\item $ch_c$ = Chainage location (distance along track centerline) where cant is calculated
+\item $\tau_0$ = Baseline time (reference measurement)
+\item $\tau_m$ = Current measurement time (m = 1, 2, 3, ...)
+\item $\text{L}$ = Left rail (subscript)
+\item $\text{R}$ = Right rail (subscript)
+\item $X, Y, Z$ = 3D coordinates (X = Easting, Y = Northing, Z = Elevation)
+\item $\Delta$ = Change or difference operator
+\end{itemize}
+
+\textbf{Coordinate Notation:}
+\begin{itemize}
+\item $Z(ch_c, \tau_m)_L$ = Z-coordinate of left rail at chainage $ch_c$ and time $\tau_m$
+\item $\Delta Z(ch_c, \tau_m)_L$ = Change in Z-coordinate: $Z(ch_c, \tau_m)_L - Z(ch_c, \tau_0)_L$
+\end{itemize}
+
+\textbf{Parameter Notation:}
+\begin{itemize}
+\item $\text{Cant}(ch_c, \tau_m)$ = Cant (cross-level) at chainage $ch_c$ and time $\tau_m$
+\item $\Delta\text{Cant}(ch_c, \tau_m)$ = Change in cant from baseline to time $\tau_m$
+\end{itemize}
+
+\section{Input Dataset}
+Assume we have interpolated rail coordinates available at a specific chainage location:
+\begin{align}
+\text{Left Rail:} \quad &Z(ch_c, \tau_0)_L \quad \text{(baseline measurement)} \\
+&Z(ch_c, \tau_m)_L \quad \text{(current measurement)} \\[0.5em]
+\text{Right Rail:} \quad &Z(ch_c, \tau_0)_R \quad \text{(baseline measurement)} \\
+&Z(ch_c, \tau_m)_R \quad \text{(current measurement)}
+\end{align}
+
+\textbf{Example:} At chainage 1000m, we have baseline Z-coordinates from January 2024 ($\tau_0$) and current Z-coordinates from June 2024 ($\tau_m$) for both left and right rails.
+
+\section{Parameter-First Approach}
+
+\subsection{Step 1: Calculate Baseline Cant}
+\begin{equation}
+\text{Cant}(ch_c, \tau_0) = Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R
+\end{equation}
+
+\subsection{Step 2: Calculate Current Cant}
+\begin{equation}
+\text{Cant}(ch_c, \tau_m) = Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R
+\end{equation}
+
+\subsection{Step 3: Calculate Cant Change}
+\begin{equation}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{param}} = \text{Cant}(ch_c, \tau_m) - \text{Cant}(ch_c, \tau_0)
+\end{equation}
+
+Substituting the cant definitions:
+\begin{align}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{param}} &= [Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R] \nonumber \\
+&\quad - [Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R]
+\end{align}
+
+\section{Delta-First Approach}
+
+\subsection{Step 1: Calculate Z-Coordinate Deltas}
+\begin{align}
+\Delta Z(ch_c, \tau_m)_L &= Z(ch_c, \tau_m)_L - Z(ch_c, \tau_0)_L \\
+\Delta Z(ch_c, \tau_m)_R &= Z(ch_c, \tau_m)_R - Z(ch_c, \tau_0)_R
+\end{align}
+
+\subsection{Step 2: Calculate Cant Change Directly}
+\begin{equation}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{delta}} = \Delta Z(ch_c, \tau_m)_L - \Delta Z(ch_c, \tau_m)_R
+\end{equation}
+
+Substituting the delta definitions:
+\begin{align}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{delta}} &= [Z(ch_c, \tau_m)_L - Z(ch_c, \tau_0)_L] \nonumber \\
+&\quad - [Z(ch_c, \tau_m)_R - Z(ch_c, \tau_0)_R]
+\end{align}
+
+\section{Equivalence Proof}
+
+\subsection{Algebraic Expansion}
+Expand parameter-first result:
+\begin{align}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{param}} &= [Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R] \\
+&\quad - [Z(ch_c, \tau_0)_L - Z(ch_c, \tau_0)_R] \\
+&= Z(ch_c, \tau_m)_L - Z(ch_c, \tau_m)_R \\
+&\quad - Z(ch_c, \tau_0)_L + Z(ch_c, \tau_0)_R
+\end{align}
+
+Expand delta-first result:
+\begin{align}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{delta}} &= [Z(ch_c, \tau_m)_L - Z(ch_c, \tau_0)_L] \\
+&\quad - [Z(ch_c, \tau_m)_R - Z(ch_c, \tau_0)_R] \\
+&= Z(ch_c, \tau_m)_L - Z(ch_c, \tau_0)_L \\
+&\quad - Z(ch_c, \tau_m)_R + Z(ch_c, \tau_0)_R
+\end{align}
+
+\subsection{Rearranging Terms}
+Rearrange parameter-first:
+\begin{align}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{param}} &= Z(ch_c, \tau_m)_L - Z(ch_c, \tau_0)_L \nonumber \\
+&\quad - Z(ch_c, \tau_m)_R + Z(ch_c, \tau_0)_R
+\end{align}
+
+Compare with delta-first:
+\begin{align}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{delta}} &= Z(ch_c, \tau_m)_L - Z(ch_c, \tau_0)_L \nonumber \\
+&\quad - Z(ch_c, \tau_m)_R + Z(ch_c, \tau_0)_R
+\end{align}
+
+\subsection{Final Comparison}
+Both expressions are identical:
+\begin{equation}
+\Delta\text{Cant}(ch_c, \tau_m)_{\text{param}} = \Delta\text{Cant}(ch_c, \tau_m)_{\text{delta}}
+\end{equation}
+
+\section{Worked Example}
+Consider a specific numerical example to demonstrate both computational methods.
+
+\subsection{Given Data}
+At chainage $ch_c = 1000$m:
+\begin{align}
+\text{Baseline (}\tau_0\text{):} \quad &Z(1000, \tau_0)_L = 102.345\text{m} \nonumber \\
+&Z(1000, \tau_0)_R = 102.330\text{m} \\[0.5em]
+\text{Current (}\tau_m\text{):} \quad &Z(1000, \tau_m)_L = 102.358\text{m} \nonumber \\
+&Z(1000, \tau_m)_R = 102.340\text{m}
+\end{align}
+
+\subsection{Parameter-First Calculation}
+\textbf{Step 1:} Calculate baseline cant
+\begin{equation}
+\text{Cant}(1000, \tau_0) = 102.345 - 102.330 = 0.015\text{m}
+\end{equation}
+
+\textbf{Step 2:} Calculate current cant
+\begin{equation}
+\text{Cant}(1000, \tau_m) = 102.358 - 102.340 = 0.018\text{m}
+\end{equation}
+
+\textbf{Step 3:} Calculate cant change
+\begin{equation}
+\Delta\text{Cant}(1000, \tau_m)_{\text{param}} = 0.018 - 0.015 = 0.003\text{m}
+\end{equation}
+
+\subsection{Delta-First Calculation}
+\textbf{Step 1:} Calculate coordinate deltas
+\begin{align}
+\Delta Z(1000, \tau_m)_L &= 102.358 - 102.345 = 0.013\text{m} \\
+\Delta Z(1000, \tau_m)_R &= 102.340 - 102.330 = 0.010\text{m}
+\end{align}
+
+\textbf{Step 2:} Calculate cant change directly
+\begin{equation}
+\Delta\text{Cant}(1000, \tau_m)_{\text{delta}} = 0.013 - 0.010 = 0.003\text{m}
+\end{equation}
+
+\subsection{Verification}
+Both methods yield identical results:
+\begin{equation}
+\Delta\text{Cant}(1000, \tau_m)_{\text{param}} = \Delta\text{Cant}(1000, \tau_m)_{\text{delta}} = 0.003\text{m}
+\end{equation}
+
+\section{Conclusion}
+\begin{equation}
+\boxed{\Delta\text{Cant}(ch_c, \tau_m)_{\text{param}} = \Delta\text{Cant}(ch_c, \tau_m)_{\text{delta}}}
+\end{equation}
+
+\textcolor{green}{\textbf{VERIFIED:}} Both approaches produce identical results for cant change calculations.
+
+\textbf{Mathematical Basis:} The equivalence holds due to the linear nature of cant calculations and the distributive property of subtraction over addition.
+
+\section{Implementation Notes}
+\begin{itemize}
+\item \textbf{Parameter-First}: More intuitive, provides intermediate cant values for analysis
+\item \textbf{Delta-First}: More computationally efficient, reuses coordinate deltas
+\item Both methods are mathematically equivalent and produce identical numerical results
+\item Choice depends on computational efficiency needs and whether intermediate cant values are required
+\end{itemize}
+
+\end{document}

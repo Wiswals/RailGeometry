@@ -1,0 +1,213 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\geometry{margin=1in}
+
+% Custom mathematical operators
+\DeclareMathOperator{\Cant}{Cant}
+\DeclareMathOperator{\Gauge}{Gauge}
+\DeclareMathOperator{\Twist}{Twist}
+\DeclareMathOperator{\Versine}{Versine}
+\DeclareMathOperator{\Offset}{Offset}
+
+% Custom commands for coordinates
+\newcommand{\coord}[3]{(#1, #2, #3)}
+\newcommand{\coordxy}[2]{(#1, #2)}
+\newcommand{\prism}[1]{P_{#1}}
+\newcommand{\time}[1]{\tau_{#1}}
+\newcommand{\chainage}[1]{ch_{#1}}
+
+% Custom commands for interpolated coordinates
+\newcommand{\Xintp}[2]{X_{\text{intp}}(#1, #2)}
+\newcommand{\Yintp}[2]{Y_{\text{intp}}(#1, #2)}
+\newcommand{\Zintp}[2]{Z_{\text{intp}}(#1, #2)}
+
+% Custom commands for rail sides
+\newcommand{\Left}{\text{L}}
+\newcommand{\Right}{\text{R}}
+
+% Custom commands for deltas
+\newcommand{\DeltaX}[2]{\Delta X(#1, #2)}
+\newcommand{\DeltaY}[2]{\Delta Y(#1, #2)}
+\newcommand{\DeltaZ}[2]{\Delta Z(#1, #2)}
+
+% Custom commands for offsets
+\newcommand{\Xoff}[1]{\Delta X_{\text{off}}(#1)}
+\newcommand{\Yoff}[1]{\Delta Y_{\text{off}}(#1)}
+\newcommand{\Zoff}[1]{\Delta Z_{\text{off}}(#1)}
+
+% Distance calculations
+\newcommand{\distance}[6]{\sqrt{(#1-#4)^2 + (#2-#5)^2 + (#3-#6)^2}}
+\newcommand{\hdistance}[4]{\sqrt{(#1-#3)^2 + (#2-#4)^2}}
+
+% Baseline coordinates
+\newcommand{\Xbase}[1]{X_0(#1)}
+\newcommand{\Ybase}[1]{Y_0(#1)}
+\newcommand{\Zbase}[1]{Z_0(#1)}
+
+\title{Rail Geometry Monitoring - Advanced Mathematical Framework}
+\author{Rail Geometry Analysis}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Mathematical Foundation}
+
+\subsection{Coordinate System Definition}
+Let us define the fundamental coordinate system for prism $\prism{p}$ at time $\time{m}$:
+\begin{equation}
+\coord{X(\prism{p}, \time{m})}{Y(\prism{p}, \time{m})}{Z(\prism{p}, \time{m})}
+\end{equation}
+
+\subsection{Baseline Establishment}
+The baseline coordinates are established at $\time{0}$:
+\begin{align}
+\Xbase{\prism{p}} &= X(\prism{p}, \time{0}) \\
+\Ybase{\prism{p}} &= Y(\prism{p}, \time{0}) \\
+\Zbase{\prism{p}} &= Z(\prism{p}, \time{0})
+\end{align}
+
+Building upon this foundation, we define displacement vectors:
+\begin{align}
+\DeltaX{\prism{p}}{\time{m}} &= X(\prism{p}, \time{m}) - \Xbase{\prism{p}} \\
+\DeltaY{\prism{p}}{\time{m}} &= Y(\prism{p}, \time{m}) - \Ybase{\prism{p}} \\
+\DeltaZ{\prism{p}}{\time{m}} &= Z(\prism{p}, \time{m}) - \Zbase{\prism{p}}
+\end{align}
+
+\section{Coordinate Transformation}
+
+\subsection{Prism-to-Rail Transformation}
+Transform prism coordinates to rail running edge using offset corrections:
+\begin{align}
+X_{\text{rail}}(\prism{p}, \time{m}) &= X_{\text{prism}}(\prism{p}, \time{m}) + \Xoff{\prism{p}} \\
+Y_{\text{rail}}(\prism{p}, \time{m}) &= Y_{\text{prism}}(\prism{p}, \time{m}) + \Yoff{\prism{p}} \\
+Z_{\text{rail}}(\prism{p}, \time{m}) &= Z_{\text{prism}}(\prism{p}, \time{m}) + \Zoff{\prism{p}}
+\end{align}
+
+\section{Interpolation Framework}
+
+\subsection{Bounding Point Selection}
+For target chainage $\chainage{\text{target}}$, find bounding points:
+\begin{align}
+\chainage{\text{last}} &= \max\{\chainage{p} : \chainage{p} \leq \chainage{\text{target}}\} \\
+\chainage{\text{next}} &= \min\{\chainage{p} : \chainage{p} \geq \chainage{\text{target}}\}
+\end{align}
+
+\subsection{Interpolation Ratio}
+Define the fundamental interpolation parameter:
+\begin{equation}
+r = \frac{\chainage{\text{target}} - \chainage{\text{last}}}{\chainage{\text{next}} - \chainage{\text{last}}}
+\end{equation}
+
+\subsection{Linear Interpolation}
+Using the ratio $r$, interpolated coordinates become:
+\begin{align}
+\Xintp{\chainage{\text{target}}}{\time{m}} &= X_{\text{last}} + r \cdot (X_{\text{next}} - X_{\text{last}}) \\
+\Yintp{\chainage{\text{target}}}{\time{m}} &= Y_{\text{last}} + r \cdot (Y_{\text{next}} - Y_{\text{last}}) \\
+\Zintp{\chainage{\text{target}}}{\time{m}} &= Z_{\text{last}} + r \cdot (Z_{\text{next}} - Z_{\text{last}})
+\end{align}
+
+\section{Geometry Parameter Calculations}
+
+\subsection{Cant Definition}
+For corresponding left and right rail points at chainage $\chainage{c}$:
+\begin{equation}
+\Cant(\chainage{c}, \time{m}) = \Zintp{\chainage{c}}{\time{m}}_{\Left} - \Zintp{\chainage{c}}{\time{m}}_{\Right}
+\end{equation}
+
+\subsection{Gauge Calculations}
+\subsubsection{3D Gauge (True Spatial Distance)}
+\begin{equation}
+\Gauge_{3D}(\chainage{c}, \time{m}) = \distance{\Xintp{\chainage{c}}{\time{m}}_{\Left}}{\Yintp{\chainage{c}}{\time{m}}_{\Left}}{\Zintp{\chainage{c}}{\time{m}}_{\Left}}{\Xintp{\chainage{c}}{\time{m}}_{\Right}}{\Yintp{\chainage{c}}{\time{m}}_{\Right}}{\Zintp{\chainage{c}}{\time{m}}_{\Right}}
+\end{equation}
+
+\subsubsection{2D Gauge (Traditional Horizontal)}
+\begin{equation}
+\Gauge_{2D}(\chainage{c}, \time{m}) = \hdistance{\Xintp{\chainage{c}}{\time{m}}_{\Left}}{\Yintp{\chainage{c}}{\time{m}}_{\Left}}{\Xintp{\chainage{c}}{\time{m}}_{\Right}}{\Yintp{\chainage{c}}{\time{m}}_{\Right}}
+\end{equation}
+
+\subsection{Twist Calculation}
+Building on the cant definition, twist over interval $\Delta ch$ is:
+\begin{equation}
+\Twist(\chainage{w}, \Delta ch, \time{m}) = \Cant(\chainage{w} + \Delta ch, \time{m}) - \Cant(\chainage{w}, \time{m})
+\end{equation}
+
+The twist rate per unit distance becomes:
+\begin{equation}
+\frac{d\Cant}{dch}(\chainage{w}, \time{m}) = \frac{\Twist(\chainage{w}, \Delta ch, \time{m})}{\Delta ch}
+\end{equation}
+
+\section{Versine Analysis}
+
+\subsection{Horizontal Versine}
+For three points at chainages $\chainage{v-s}$, $\chainage{v}$, $\chainage{v+s}$:
+
+\subsubsection{Perpendicular Offset}
+\begin{equation}
+\Offset_{\text{hz}}(\chainage{v}) = \frac{|(Y_{v+s} - Y_{v-s}) \cdot X_v - (X_{v+s} - X_{v-s}) \cdot Y_v + X_{v+s} \cdot Y_{v-s} - X_{v-s} \cdot Y_{v+s}|}{\hdistance{X_{v+s}}{Y_{v+s}}{X_{v-s}}{Y_{v-s}}}
+\end{equation}
+
+\subsubsection{Signed Horizontal Versine}
+\begin{equation}
+\Versine_{\text{hz}}(\chainage{v}) = \Offset_{\text{hz}}(\chainage{v}) \times \text{sign}
+\end{equation}
+
+\subsection{Vertical Versine}
+Using chainage-based interpolation for the expected elevation:
+\begin{equation}
+Z_{\text{expected}} = Z_{v-s} + \frac{\chainage{v} - \chainage{v-s}}{\chainage{v+s} - \chainage{v-s}} \cdot (Z_{v+s} - Z_{v-s})
+\end{equation}
+
+Therefore:
+\begin{equation}
+\Versine_{\text{vt}}(\chainage{v}) = Z_v - Z_{\text{expected}}
+\end{equation}
+
+\section{Change Analysis Framework}
+
+\subsection{Parameter Change Definitions}
+For any geometry parameter $P$, define baseline and change:
+\begin{align}
+P_0(\chainage{}) &= P(\chainage{}, \time{0}) \\
+\Delta P(\chainage{}, \time{m}) &= P(\chainage{}, \time{m}) - P_0(\chainage{})
+\end{align}
+
+\subsection{Specific Parameter Changes}
+\begin{align}
+\Delta\Cant(\chainage{c}, \time{m}) &= \Cant(\chainage{c}, \time{m}) - \Cant(\chainage{c}, \time{0}) \\
+\Delta\Gauge(\chainage{c}, \time{m}) &= \Gauge(\chainage{c}, \time{m}) - \Gauge(\chainage{c}, \time{0}) \\
+\Delta\Twist(\chainage{w}, \time{m}) &= \Twist(\chainage{w}, \time{m}) - \Twist(\chainage{w}, \time{0})
+\end{align}
+
+\subsection{Rate of Change}
+The temporal rate of parameter change:
+\begin{equation}
+\frac{dP}{dt}(\chainage{}, \time{m}) = \frac{\Delta P(\chainage{}, \time{m})}{\time{m} - \time{0}}
+\end{equation}
+
+\subsection{Threshold Analysis}
+Define alert conditions:
+\begin{equation}
+\text{Alert}_P(\chainage{}, \time{m}) = \begin{cases}
+\textcolor{red}{\text{CRITICAL}} & \text{if } |\Delta P(\chainage{}, \time{m})| > T_{\text{critical}} \\
+\textcolor{orange}{\text{WARNING}} & \text{if } |\Delta P(\chainage{}, \time{m})| > T_{\text{warning}} \\
+\textcolor{green}{\text{NORMAL}} & \text{otherwise}
+\end{cases}
+\end{equation}
+
+\section{Summary}
+This advanced mathematical framework provides a systematic approach to rail geometry monitoring using:
+\begin{itemize}
+\item Custom LaTeX commands for consistent notation
+\item Progressive formula building from basic definitions
+\item Reusable mathematical operators
+\item Comprehensive change analysis framework
+\end{itemize}
+
+The framework enables automated calculation of all geometry parameters and their changes over time for effective rail infrastructure monitoring.
+
+\end{document}

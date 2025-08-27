@@ -1,0 +1,364 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\geometry{margin=1in}
+
+\title{Rail Geometry Twist Change Calculations - Equivalence Verification}
+\author{Rail Geometry Analysis}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Problem Statement}
+Given interpolated rail coordinates for left and right rails, verify that two computational approaches for calculating twist parameter changes produce identical results:
+
+\textbf{Parameter-First Approach}: Calculate twist parameters, then compute parameter changes\\
+\textbf{Delta-First Approach}: Calculate coordinate deltas, then compute parameter changes directly
+
+This verification demonstrates mathematical equivalence between both computational methods for twist calculations.
+
+\section{Notation}
+\textbf{Variable Definitions:}
+\begin{itemize}
+\item $ch_w$ = Chainage location where twist is calculated
+\item $\Delta ch$ = Distance interval over which twist is measured
+\item $\tau_0$ = Baseline time (reference measurement)
+\item $\tau_m$ = Current measurement time (m = 1, 2, 3, ...)
+\item $\text{L}$ = Left rail (subscript)
+\item $\text{R}$ = Right rail (subscript)
+\item $X, Y, Z$ = 3D coordinates (X = Easting, Y = Northing, Z = Elevation)
+\item $\Delta$ = Change or difference operator
+\end{itemize}
+
+\textbf{Coordinate Notation:}
+\begin{itemize}
+\item $Z(ch, \tau_m)_L$ = Z-coordinate of left rail at chainage $ch$ and time $\tau_m$
+\item $\Delta Z(ch, \tau_m)_L$ = Change in Z-coordinate: $Z(ch, \tau_m)_L - Z(ch, \tau_0)_L$
+\end{itemize}
+
+\textbf{Parameter Notation:}
+\begin{itemize}
+\item $\text{Cant}(ch, \tau_m)$ = Cant (cross-level) at chainage $ch$ and time $\tau_m$
+\item $\text{Twist}(ch_w, \Delta ch, \tau_m)$ = Twist over interval $\Delta ch$ starting at chainage $ch_w$ and time $\tau_m$
+\item $\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)$ = Change in twist from baseline to time $\tau_m$
+\end{itemize}
+
+\section{Input Dataset}
+Assume we have interpolated rail coordinates available at two chainage locations separated by distance $\Delta ch$:
+\begin{align}
+\text{At } ch_w\text{:} \quad &Z(ch_w, \tau_0)_L, Z(ch_w, \tau_0)_R \quad \text{(baseline)} \\
+&Z(ch_w, \tau_m)_L, Z(ch_w, \tau_m)_R \quad \text{(current)} \\[0.5em]
+\text{At } ch_w + \Delta ch\text{:} \quad &Z(ch_w + \Delta ch, \tau_0)_L, Z(ch_w + \Delta ch, \tau_0)_R \quad \text{(baseline)} \\
+&Z(ch_w + \Delta ch, \tau_m)_L, Z(ch_w + \Delta ch, \tau_m)_R \quad \text{(current)}
+\end{align}
+
+\textbf{Example:} At chainages 1000m and 1014m (14m interval), we have baseline and current Z-coordinates for both rails.
+
+\section{Parameter-First Approach}
+
+\subsection{Step 1: Calculate Baseline Cant Values}
+\begin{align}
+\text{Cant}(ch_w, \tau_0) &= Z(ch_w, \tau_0)_L - Z(ch_w, \tau_0)_R \\
+\text{Cant}(ch_w + \Delta ch, \tau_0) &= Z(ch_w + \Delta ch, \tau_0)_L - Z(ch_w + \Delta ch, \tau_0)_R
+\end{align}
+
+\subsection{Step 2: Calculate Current Cant Values}
+\begin{align}
+\text{Cant}(ch_w, \tau_m) &= Z(ch_w, \tau_m)_L - Z(ch_w, \tau_m)_R \\
+\text{Cant}(ch_w + \Delta ch, \tau_m) &= Z(ch_w + \Delta ch, \tau_m)_L - Z(ch_w + \Delta ch, \tau_m)_R
+\end{align}
+
+\subsection{Step 3: Calculate Baseline and Current Twist}
+\begin{align}
+\text{Twist}(ch_w, \Delta ch, \tau_0) &= \text{Cant}(ch_w + \Delta ch, \tau_0) - \text{Cant}(ch_w, \tau_0) \\
+\text{Twist}(ch_w, \Delta ch, \tau_m) &= \text{Cant}(ch_w + \Delta ch, \tau_m) - \text{Cant}(ch_w, \tau_m)
+\end{align}
+
+\subsection{Step 4: Calculate Twist Change}
+\begin{equation}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{param}} = \text{Twist}(ch_w, \Delta ch, \tau_m) - \text{Twist}(ch_w, \Delta ch, \tau_0)
+\end{equation}
+
+Substituting the twist definitions:
+\begin{align}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{param}} &= [\text{Cant}(ch_w + \Delta ch, \tau_m) - \text{Cant}(ch_w, \tau_m)] \nonumber \\
+&\quad - [\text{Cant}(ch_w + \Delta ch, \tau_0) - \text{Cant}(ch_w, \tau_0)]
+\end{align}
+
+\section{Delta-First Approach}
+
+\subsection{Step 1: Calculate Z-Coordinate Deltas}
+\begin{align}
+\Delta Z(ch_w, \tau_m)_L &= Z(ch_w, \tau_m)_L - Z(ch_w, \tau_0)_L \\
+\Delta Z(ch_w, \tau_m)_R &= Z(ch_w, \tau_m)_R - Z(ch_w, \tau_0)_R \\
+\Delta Z(ch_w + \Delta ch, \tau_m)_L &= Z(ch_w + \Delta ch, \tau_m)_L - Z(ch_w + \Delta ch, \tau_0)_L \\
+\Delta Z(ch_w + \Delta ch, \tau_m)_R &= Z(ch_w + \Delta ch, \tau_m)_R - Z(ch_w + \Delta ch, \tau_0)_R
+\end{align}
+
+\subsection{Step 2: Calculate Cant Changes}
+\begin{align}
+\Delta\text{Cant}(ch_w, \tau_m) &= \Delta Z(ch_w, \tau_m)_L - \Delta Z(ch_w, \tau_m)_R \\
+\Delta\text{Cant}(ch_w + \Delta ch, \tau_m) &= \Delta Z(ch_w + \Delta ch, \tau_m)_L - \Delta Z(ch_w + \Delta ch, \tau_m)_R
+\end{align}
+
+\subsection{Step 3: Calculate Twist Change Directly}
+\begin{equation}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{delta}} = \Delta\text{Cant}(ch_w + \Delta ch, \tau_m) - \Delta\text{Cant}(ch_w, \tau_m)
+\end{equation}
+
+Substituting the cant change definitions:
+\begin{align}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{delta}} &= [\Delta Z(ch_w + \Delta ch, \tau_m)_L - \Delta Z(ch_w + \Delta ch, \tau_m)_R] \nonumber \\
+&\quad - [\Delta Z(ch_w, \tau_m)_L - \Delta Z(ch_w, \tau_m)_R]
+\end{align}
+
+\section{Equivalence Proof}
+
+\subsection{Expand Parameter-First Method}
+Substitute cant definitions into the parameter-first result:
+\begin{align}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{param}} &= [\text{Cant}(ch_w + \Delta ch, \tau_m) - \text{Cant}(ch_w, \tau_m)] \nonumber \\
+&\quad - [\text{Cant}(ch_w + \Delta ch, \tau_0) - \text{Cant}(ch_w, \tau_0)]
+\end{align}
+
+Expand cant terms:
+\begin{align}
+&= [[Z(ch_w + \Delta ch, \tau_m)_L - Z(ch_w + \Delta ch, \tau_m)_R] - [Z(ch_w, \tau_m)_L - Z(ch_w, \tau_m)_R]] \nonumber \\
+&\quad - [[Z(ch_w + \Delta ch, \tau_0)_L - Z(ch_w + \Delta ch, \tau_0)_R] - [Z(ch_w, \tau_0)_L - Z(ch_w, \tau_0)_R]]
+\end{align}
+
+Simplify:
+\begin{align}
+&= [Z(ch_w + \Delta ch, \tau_m)_L - Z(ch_w + \Delta ch, \tau_m)_R - Z(ch_w, \tau_m)_L + Z(ch_w, \tau_m)_R] \nonumber \\
+&\quad - [Z(ch_w + \Delta ch, \tau_0)_L - Z(ch_w + \Delta ch, \tau_0)_R - Z(ch_w, \tau_0)_L + Z(ch_w, \tau_0)_R]
+\end{align}
+
+\subsection{Expand Delta-First Method}
+Substitute coordinate delta definitions:
+\begin{align}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{delta}} &= [\Delta Z(ch_w + \Delta ch, \tau_m)_L - \Delta Z(ch_w + \Delta ch, \tau_m)_R] \nonumber \\
+&\quad - [\Delta Z(ch_w, \tau_m)_L - \Delta Z(ch_w, \tau_m)_R]
+\end{align}
+
+Expand delta terms:
+\begin{align}
+&= [[Z(ch_w + \Delta ch, \tau_m)_L - Z(ch_w + \Delta ch, \tau_0)_L] - [Z(ch_w + \Delta ch, \tau_m)_R - Z(ch_w + \Delta ch, \tau_0)_R]] \nonumber \\
+&\quad - [[Z(ch_w, \tau_m)_L - Z(ch_w, \tau_0)_L] - [Z(ch_w, \tau_m)_R - Z(ch_w, \tau_0)_R]]
+\end{align}
+
+Simplify:
+\begin{align}
+&= [Z(ch_w + \Delta ch, \tau_m)_L - Z(ch_w + \Delta ch, \tau_0)_L - Z(ch_w + \Delta ch, \tau_m)_R + Z(ch_w + \Delta ch, \tau_0)_R] \nonumber \\
+&\quad - [Z(ch_w, \tau_m)_L - Z(ch_w, \tau_0)_L - Z(ch_w, \tau_m)_R + Z(ch_w, \tau_0)_R]
+\end{align}
+
+\subsection{Rearrange Terms}
+Rearrange parameter-first result:
+\begin{align}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{param}} &= Z(ch_w + \Delta ch, \tau_m)_L - Z(ch_w + \Delta ch, \tau_0)_L \nonumber \\
+&\quad - Z(ch_w + \Delta ch, \tau_m)_R + Z(ch_w + \Delta ch, \tau_0)_R \nonumber \\
+&\quad - Z(ch_w, \tau_m)_L + Z(ch_w, \tau_0)_L \nonumber \\
+&\quad + Z(ch_w, \tau_m)_R - Z(ch_w, \tau_0)_R
+\end{align}
+
+Rearrange delta-first result:
+\begin{align}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{delta}} &= Z(ch_w + \Delta ch, \tau_m)_L - Z(ch_w + \Delta ch, \tau_0)_L \nonumber \\
+&\quad - Z(ch_w + \Delta ch, \tau_m)_R + Z(ch_w + \Delta ch, \tau_0)_R \nonumber \\
+&\quad - Z(ch_w, \tau_m)_L + Z(ch_w, \tau_0)_L \nonumber \\
+&\quad + Z(ch_w, \tau_m)_R - Z(ch_w, \tau_0)_R
+\end{align}
+
+\subsection{Final Comparison}
+Both expressions are identical:
+\begin{equation}
+\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{param}} = \Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{delta}}
+\end{equation}
+
+\section{Worked Example}
+Consider a specific numerical example to demonstrate both computational methods.
+
+\subsection{Given Data}
+At chainages $ch_w = 1000$m and $ch_w + \Delta ch = 1014$m ($\Delta ch = 14$m):
+\begin{align}
+\text{Baseline (}\tau_0\text{):} \quad &Z(1000, \tau_0)_L = 102.345\text{m}, \quad Z(1000, \tau_0)_R = 102.330\text{m} \nonumber \\
+&Z(1014, \tau_0)_L = 102.355\text{m}, \quad Z(1014, \tau_0)_R = 102.338\text{m} \\[0.5em]
+\text{Current (}\tau_m\text{):} \quad &Z(1000, \tau_m)_L = 102.358\text{m}, \quad Z(1000, \tau_m)_R = 102.340\text{m} \nonumber \\
+&Z(1014, \tau_m)_L = 102.368\text{m}, \quad Z(1014, \tau_m)_R = 102.346\text{m}
+\end{align}
+
+\subsection{Parameter-First Calculation}
+\textbf{Step 1:} Calculate baseline cant values
+\begin{align}
+\text{Cant}(1000, \tau_0) &= 102.345 - 102.330 = 0.015\text{m} \\
+\text{Cant}(1014, \tau_0) &= 102.355 - 102.338 = 0.017\text{m}
+\end{align}
+
+\textbf{Step 2:} Calculate current cant values
+\begin{align}
+\text{Cant}(1000, \tau_m) &= 102.358 - 102.340 = 0.018\text{m} \\
+\text{Cant}(1014, \tau_m) &= 102.368 - 102.346 = 0.022\text{m}
+\end{align}
+
+\textbf{Step 3:} Calculate baseline and current twist
+\begin{align}
+\text{Twist}(1000, 14, \tau_0) &= 0.017 - 0.015 = 0.002\text{m} \\
+\text{Twist}(1000, 14, \tau_m) &= 0.022 - 0.018 = 0.004\text{m}
+\end{align}
+
+\textbf{Step 4:} Calculate twist change
+\begin{equation}
+\Delta\text{Twist}(1000, 14, \tau_m)_{\text{param}} = 0.004 - 0.002 = 0.002\text{m}
+\end{equation}
+
+\subsection{Delta-First Calculation}
+\textbf{Step 1:} Calculate coordinate deltas
+\begin{align}
+\Delta Z(1000, \tau_m)_L &= 102.358 - 102.345 = 0.013\text{m} \\
+\Delta Z(1000, \tau_m)_R &= 102.340 - 102.330 = 0.010\text{m} \\
+\Delta Z(1014, \tau_m)_L &= 102.368 - 102.355 = 0.013\text{m} \\
+\Delta Z(1014, \tau_m)_R &= 102.346 - 102.338 = 0.008\text{m}
+\end{align}
+
+\textbf{Step 2:} Calculate cant changes
+\begin{align}
+\Delta\text{Cant}(1000, \tau_m) &= 0.013 - 0.010 = 0.003\text{m} \\
+\Delta\text{Cant}(1014, \tau_m) &= 0.013 - 0.008 = 0.005\text{m}
+\end{align}
+
+\textbf{Step 3:} Calculate twist change directly
+\begin{equation}
+\Delta\text{Twist}(1000, 14, \tau_m)_{\text{delta}} = 0.005 - 0.003 = 0.002\text{m}
+\end{equation}
+
+\subsection{Verification}
+Both methods yield identical results:
+\begin{equation}
+\Delta\text{Twist}(1000, 14, \tau_m)_{\text{param}} = \Delta\text{Twist}(1000, 14, \tau_m)_{\text{delta}} = 0.002\text{m}
+\end{equation}
+
+\section{Conclusion}
+\begin{equation}
+\boxed{\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{param}} = \Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{delta}}}
+\end{equation}
+
+\textcolor{green}{\textbf{VERIFIED:}} Both approaches produce identical results for twist change calculations.
+
+\textbf{Mathematical Basis:} The equivalence holds because twist is a linear combination of cant values, and the distributive property of subtraction ensures identical results.
+
+\section{Implementation Notes}
+\begin{itemize}
+\item \textbf{Parameter-First}: More intuitive, provides intermediate cant and twist values for analysis
+\item \textbf{Delta-First}: More computationally efficient, reuses coordinate deltas across multiple parameters
+\item Both methods are mathematically equivalent and produce identical numerical results
+\item Twist calculations require coordinates at two chainage locations separated by the measurement interval
+\item Choice depends on computational efficiency needs and whether intermediate parameter values are required
+\end{itemize}
+
+\end{document}nt cant values
+\begin{align}
+\text{Cant}(1000, \tau_m) &= 102.358 - 102.340 = 0.018\text{m} \\
+\text{Cant}(1014, \tau_m) &= 102.368 - 102.346 = 0.022\text{m}
+\end{align}
+
+\textbf{Step 3:} Calculate baseline and current twist
+\begin{align}
+\text{Twist}(1000, 14, \tau_0) &= 0.017 - 0.015 = 0.002\text{m} \\
+\text{Twist}(1000, 14, \tau_m) &= 0.022 - 0.018 = 0.004\text{m}
+\end{align}
+
+\textbf{Step 4:} Calculate twist change
+\begin{equation}
+\Delta\text{Twist}(1000, 14, \tau_m)_{\text{param}} = 0.004 - 0.002 = 0.002\text{m}
+\end{equation}
+
+\subsection{Delta-First Calculation}
+\textbf{Step 1:} Calculate coordinate deltas
+\begin{align}
+\Delta Z(1000, \tau_m)_L &= 102.358 - 102.345 = 0.013\text{m} \\
+\Delta Z(1000, \tau_m)_R &= 102.340 - 102.330 = 0.010\text{m} \\
+\Delta Z(1014, \tau_m)_L &= 102.368 - 102.355 = 0.013\text{m} \\
+\Delta Z(1014, \tau_m)_R &= 102.346 - 102.338 = 0.008\text{m}
+\end{align}
+
+\textbf{Step 2:} Calculate cant changes
+\begin{align}
+\Delta\text{Cant}(1000, \tau_m) &= 0.013 - 0.010 = 0.003\text{m} \\
+\Delta\text{Cant}(1014, \tau_m) &= 0.013 - 0.008 = 0.005\text{m}
+\end{align}
+
+\textbf{Step 3:} Calculate twist change directly
+\begin{equation}
+\Delta\text{Twist}(1000, 14, \tau_m)_{\text{delta}} = 0.005 - 0.003 = 0.002\text{m}
+\end{equation}
+
+\subsection{Verification}
+Both methods yield identical results:
+\begin{equation}
+\Delta\text{Twist}(1000, 14, \tau_m)_{\text{param}} = \Delta\text{Twist}(1000, 14, \tau_m)_{\text{delta}} = 0.002\text{m}
+\end{equation}nt cant values
+\begin{align}
+\text{Cant}(1000, \tau_m) &= 102.358 - 102.340 = 0.018\text{m} \\
+\text{Cant}(1020, \tau_m) &= 102.365 - 102.342 = 0.023\text{m}
+\end{align}
+
+\textbf{Step 3:} Calculate baseline and current twist
+\begin{align}
+\text{Twist}(1000, 20, \tau_0) &= 0.020 - 0.015 = 0.005\text{m} \\
+\text{Twist}(1000, 20, \tau_m) &= 0.023 - 0.018 = 0.005\text{m}
+\end{align}
+
+\textbf{Step 4:} Calculate twist change
+\begin{equation}
+\Delta\text{Twist}(1000, 20, \tau_m)_{\text{param}} = 0.005 - 0.005 = 0.000\text{m}
+\end{equation}
+
+\subsection{Delta-First Calculation}
+\textbf{Step 1:} Calculate coordinate deltas
+\begin{align}
+\Delta Z(1000, \tau_m)_L &= 102.358 - 102.345 = 0.013\text{m} \\
+\Delta Z(1000, \tau_m)_R &= 102.340 - 102.330 = 0.010\text{m} \\
+\Delta Z(1020, \tau_m)_L &= 102.365 - 102.355 = 0.010\text{m} \\
+\Delta Z(1020, \tau_m)_R &= 102.342 - 102.335 = 0.007\text{m}
+\end{align}
+
+\textbf{Step 2:} Calculate cant changes
+\begin{align}
+\Delta\text{Cant}(1000, \tau_m) &= 0.013 - 0.010 = 0.003\text{m} \\
+\Delta\text{Cant}(1020, \tau_m) &= 0.010 - 0.007 = 0.003\text{m}
+\end{align}
+
+\textbf{Step 3:} Calculate twist change directly
+\begin{equation}
+\Delta\text{Twist}(1000, 20, \tau_m)_{\text{delta}} = 0.003 - 0.003 = 0.000\text{m}
+\end{equation}
+
+\subsection{Verification}
+Both methods yield identical results:
+\begin{equation}
+\Delta\text{Twist}(1000, 20, \tau_m)_{\text{param}} = \Delta\text{Twist}(1000, 20, \tau_m)_{\text{delta}} = 0.000\text{m}
+\end{equation}
+
+\section{Conclusion}
+\begin{equation}
+\boxed{\Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{param}} = \Delta\text{Twist}(ch_w, \Delta ch, \tau_m)_{\text{delta}}}
+\end{equation}
+
+\textcolor{green}{\textbf{VERIFIED:}} Both approaches produce identical results for twist change calculations.
+
+\textbf{Mathematical Basis:} The equivalence holds because twist is a linear combination of cant values, and the distributive property of subtraction ensures identical results.
+
+\section{Implementation Notes}
+\begin{itemize}
+\item \textbf{Parameter-First}: More intuitive, provides intermediate cant and twist values for analysis
+\item \textbf{Delta-First}: More computationally efficient, reuses coordinate deltas across multiple parameters
+\item Both methods are mathematically equivalent and produce identical numerical results
+\item Twist calculations require coordinates at two chainage locations separated by the measurement interval
+\item Choice depends on computational efficiency needs and whether intermediate parameter values are required
+\end{itemize}
+
+\end{document}
